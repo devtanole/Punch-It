@@ -49,3 +49,5 @@ ALTER TABLE "fighter_profile" ADD FOREIGN KEY ("userId") REFERENCES "users" ("us
 ALTER TABLE "promoter_profile" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
 
 ALTER TABLE "posts" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
+
+-- sd
