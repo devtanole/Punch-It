@@ -20,13 +20,13 @@ CREATE TABLE "users" (
 
 CREATE TABLE "fighter_profile" (
   "userId" int PRIMARY KEY,
-  "height" text,
-  "weight" int,
-  "record" text,
+  "height" text NOT NULL,
+  "weight" int NOT NULL,
+  "record" text NOT NULL,
   "gymName" text,
-  "pullouts" int,
-  "weightMisses" int,
-  "finishes" int
+  "pullouts" int NOT NULL,
+  "weightMisses" int NOT NULL,
+  "finishes" int NOT NULL
 );
 
 CREATE TABLE "promoter_profile" (
