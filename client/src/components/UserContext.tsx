@@ -4,6 +4,28 @@ import { readUser, readToken, removeAuth, saveAuth } from '../lib/data';
 export type User = {
   userId: number;
   username: string;
+  password: string;
+  profilePictureUrl?: string;
+  fullName: string;
+  email: string;
+  location: string;
+  userType: 'fighter' | 'promoter';
+};
+
+export type FighterUser = User & {
+  weight: number;
+  height: string;
+  record: string;
+  gymName?: string;
+  pullouts: number;
+  weightMisses: number;
+  finishes: number;
+};
+
+export type PromoterUser = User & {
+  promotion: number;
+  promoter: number;
+  nextEvent?: string;
 };
 
 export type UserContextValues = {

@@ -8,13 +8,14 @@ create schema "public";
 
 CREATE TABLE "users" (
   "userId" serial PRIMARY KEY,
+  "profilePictureUrl" text,
   "email" varchar UNIQUE NOT NULL,
   "fullName" text NOT NULL,
-  "bio" text NOT NULL,
+  "bio" text,
   "username" text UNIQUE NOT NULL,
   "hashedPassword" text NOT NULL,
   "userType" varchar NOT NULL,
-  "createdAt" timestamptz NOT NULL,
+  "createdAt" timestamptz NOT NULL DEFAULT 'now()',
   "location" text NOT NULL
 );
 

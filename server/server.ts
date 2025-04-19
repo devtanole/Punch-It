@@ -4,7 +4,13 @@ import express from 'express';
 import pg from 'pg';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
-import { ClientError, errorMiddleware } from './lib/index.js';
+import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
+
+type Auth = {
+  email: string;
+  username: string;
+  password: string;
+};
 
 type User = {
   userId: number;
@@ -50,8 +56,8 @@ const db = new pg.Pool({
   },
 });
 
-const hashkey = process.env.TOKEN_SECRET as string;
-if (!hashkey) {
+const hashSecret = process.env.TOKEN_SECRET;
+if (!hashSecret) {
   throw new Error('TOKEN_SECRET not found in .env');
 }
 
@@ -59,44 +65,36 @@ const app = express();
 
 app.use(express.json());
 
-app.post('/api/users/sign-up', async (req, res, next) => {
+app.post('/api/auth/sign-up', async (req, res, next) => {
   try {
-    const { email, fullName, username, password, userType, location, bio } =
-      req.body;
+    const {
+      email,
+      fullName,
+      username,
+      password,
+      location,
+      bio,
+      profilePictureUrl,
+      userType,
+      ...rest
+    } = req.body;
     if (
+      !userType ||
       !email ||
       !fullName ||
       !username ||
       !password ||
-      !userType ||
-      !location ||
-      !bio
+      !location
     ) {
       throw new ClientError(400, 'a required field is missing');
     }
-    const sqlCheck = `select * from "users"
-    where "email" = $1 or "username" = $2;
-    `;
-    const checkResult = await db.query(sqlCheck, [email, username]);
-    if (checkResult.rows.length > 0) {
-      const existingUser = checkResult.rows[0];
-
-      if (existingUser.email === email) {
-        throw new ClientError(400, 'email already in use.');
-      }
-
-      if (existingUser.username === username) {
-        throw new ClientError(400, 'username is taken.');
-      }
-    }
     const hashedPassword = await argon2.hash(password);
-
-    const newUserSQL = `
-  insert into "users" ("email", "fullName", "username", "hashedPassword", "userType", "location", "bio")
-  values ($1, $2, $3, $4, $5, $6, $7)
-  returning "userId", "fullName", "username", "createdAt";
+    const sqlUsers = `
+  insert into "users" ("email", "fullName", "username", "hashedPassword", "userType", "location", "bio", "profilePictureUrl")
+  values ($1, $2, $3, $4, $5, $6, $7, $8)
+  returning "userId", "username", "createdAt";
   `;
-    const params = [
+    const userParams = [
       email,
       fullName,
       username,
@@ -104,20 +102,128 @@ app.post('/api/users/sign-up', async (req, res, next) => {
       userType,
       location,
       bio,
+      profilePictureUrl,
     ];
-    const result = await db.query(newUserSQL, params);
+    const result = await db.query(sqlUsers, userParams);
     const newUser = result.rows[0];
+    const userId = newUser.userId;
+
+    if (userType === 'fighter') {
+      const {
+        height,
+        weight,
+        record,
+        gymName,
+        pullouts,
+        weightMisses,
+        finishes,
+      } = rest;
+      if (
+        !height ||
+        !weight ||
+        !record ||
+        pullouts == null ||
+        weightMisses == null ||
+        finishes == null
+      ) {
+        throw new ClientError(400, 'missing required field');
+      }
+      const sqlFighters = `
+    insert into "fighter_profile" ("userId", "height", "weight", "record", "gymName", "pullouts", "weightMisses", "finishes")
+    values ($1, $2, $3, $4, $5, $6, $7, $8);
+    `;
+      const fighterParams = [
+        userId,
+        height,
+        weight,
+        record,
+        gymName ?? null,
+        pullouts,
+        weightMisses,
+        finishes,
+      ];
+
+      await db.query(sqlFighters, fighterParams);
+    } else if (userType === 'promoter') {
+      const { promotion, promoter, nextEvent } = rest;
+
+      if (!promotion || !promoter) {
+        throw new ClientError(400, 'required field missing');
+      }
+      const sqlPromoter = `
+    insert into "promoter_profile" ("userId", "promotion", "promoter", "nextEvent")
+    values ($1, $2, $3, $4);
+    `;
+      const promoterParams = [userId, promotion, promoter, nextEvent ?? null];
+      await db.query(sqlPromoter, promoterParams);
+    } else {
+      throw new ClientError(400, 'invalid user');
+    }
     res.status(201).json(newUser);
   } catch (err) {
     next(err);
   }
 });
 
-app.post('/api/users/sign-in', async (req, res, next) => {
+// app.post('/api/auth/sign-up', authMiddleware, async (req, res, next) => {
+//   try {
+//     const { email, fullName, username, password, userType, location, bio } =
+//       req.body;
+//     if (
+//       !email ||
+//       !fullName ||
+//       !username ||
+//       !password ||
+//       !userType ||
+//       !location ||
+//       !bio
+//     ) {
+//       throw new ClientError(400, 'a required field is missing');
+//     }
+//     const sqlCheck = `select * from "users"
+//     where "email" = $1 or "username" = $2;
+//     `;
+//     const checkResult = await db.query(sqlCheck, [email, username]);
+//     if (checkResult.rows.length > 0) {
+//       const existingUser = checkResult.rows[0];
+
+//       if (existingUser.email === email) {
+//         throw new ClientError(400, 'email already in use.');
+//       }
+
+//       if (existingUser.username === username) {
+//         throw new ClientError(400, 'username is taken.');
+//       }
+//     }
+//     const hashedPassword = await argon2.hash(password);
+
+//     const newUserSQL = `
+//   insert into "users" ("email", "fullName", "username", "hashedPassword", "userType", "location", "bio")
+//   values ($1, $2, $3, $4, $5, $6, $7)
+//   returning "userId", "fullName", "username", "createdAt";
+//   `;
+//     const params = [
+//       email,
+//       fullName,
+//       username,
+//       hashedPassword,
+//       userType,
+//       location,
+//       bio,
+//     ];
+//     const result = await db.query<Auth>(newUserSQL, params);
+//     const newUser = result.rows[0];
+//     res.status(201).json(newUser);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+app.post('/api/auth/sign-in', async (req, res, next) => {
   try {
-    const { email, username, password } = req.body;
-    if (!email || !username || !password) {
-      throw new ClientError(401, 'invalid login');
+    const { email, username, password } = req.body as Partial<Auth>;
+    if ((!email && !username) || !password) {
+      throw new ClientError(401, 'invalid login, email or username missing');
     }
     const sql = `
     select "userId",
@@ -125,21 +231,21 @@ app.post('/api/users/sign-in', async (req, res, next) => {
         from "users"
         where "email" = $1 or "username" = $2;
     `;
-    const params = [username, email];
+    const params = [email, username];
     const result = await db.query(sql, params);
     const user = result.rows[0];
     if (!user) {
-      throw new ClientError(401, 'invalid login');
+      throw new ClientError(401, 'invalid login, user not found');
     }
     const isPasswordValid = await argon2.verify(user.hashedPassword, password);
     if (!isPasswordValid) {
-      throw new ClientError(401, 'invalid login');
+      throw new ClientError(401, 'invalid login, invalid password');
     }
     const payload = {
       userId: user.userId,
       username: user.username,
     };
-    const newSignedToken = jwt.sign(payload, hashkey);
+    const newSignedToken = jwt.sign(payload, hashSecret);
     res.status(200).json({
       user: payload,
       token: newSignedToken,
