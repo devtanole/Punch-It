@@ -21,6 +21,7 @@ type User = {
   password: string;
   userType: 'fighter' | 'promoter';
   location: string;
+  profilePictureUrl: string;
 };
 
 type FighterProfile = {
@@ -250,6 +251,67 @@ app.post('/api/auth/sign-in', async (req, res, next) => {
       user: payload,
       token: newSignedToken,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/posts', authMiddleware, async (req, res, next) => {
+  try {
+    const sql = `
+    select * from "posts"
+    where "userId" = $1
+    order by "postId" desc;
+    `;
+    const params = [req.user?.userId];
+    const result = await db.query(sql, params);
+    const total = result.rows;
+    if (!total) {
+      throw new ClientError(404, `entries not found`);
+    }
+    res.json(total);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/posts/:postId', authMiddleware, async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    if (postId === undefined) {
+      throw new ClientError(400, `postId required`);
+    }
+    const sql = `
+    select * from "posts"
+    where "postId" = $1 and "userId" = $2;
+    `;
+    const params = [postId, req.user?.userId];
+    const result = await db.query<Post>(sql, params);
+    const post = result.rows[0];
+    if (!post) {
+      throw new ClientError(404, `post ${postId} not found`);
+    }
+    res.json(post);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/posts', authMiddleware, async (req, res, next) => {
+  try {
+    const { textContent, mediaUrls } = req.body;
+    if (!textContent && !mediaUrls) {
+      throw new ClientError(400, `post must have text or media`);
+    }
+    const sql = `
+    insert into "posts" ("textContent", "mediaUrls", "userId")
+    values ($1, $2, $3)
+    returning *;
+    `;
+    const params = [textContent, mediaUrls, req.user?.userId];
+    const result = await db.query(sql, params);
+    const post = result.rows[0];
+    res.status(201).json(post);
   } catch (err) {
     next(err);
   }

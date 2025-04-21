@@ -7,10 +7,12 @@ import {
   type FighterProps,
   type PromoterProps,
 } from './ConditionalFormFields';
+import { UserAvatar } from './UserAvatar';
 
 export function RegistrationForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<'fighter' | 'promoter'>('fighter');
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const [fighterFormData, setFighterFormData] = useState<FighterProps>({
@@ -64,6 +66,7 @@ export function RegistrationForm() {
         ...userData,
         ...(userType === 'fighter' ? fighterFormData : promoterFormData),
         userType,
+        profilePicture,
       };
 
       const req = {
@@ -95,11 +98,16 @@ export function RegistrationForm() {
           <div>
             <label className="mb-1 block">
               Profile Picture
-              <input
-                name="profilePictureUrl"
+              <UserAvatar
+                onUpload={(url) => setProfilePicture(url)}
+                defaultAvi={profilePicture ?? undefined}
+              />
+              {/* <input
+                required
+                name="profilePicture"
                 type="text"
                 className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
+              /> */}
             </label>
             <label className="mb-1 block">
               Username
