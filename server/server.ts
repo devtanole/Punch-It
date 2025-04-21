@@ -2,7 +2,53 @@
 import 'dotenv/config';
 import express from 'express';
 import pg from 'pg';
-import { ClientError, errorMiddleware } from './lib/index.js';
+import argon2 from 'argon2';
+import jwt from 'jsonwebtoken';
+import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
+
+type Auth = {
+  email: string;
+  username: string;
+  password: string;
+};
+
+type User = {
+  userId: number;
+  email: string;
+  fullName: string;
+  bio: string;
+  username: string;
+  password: string;
+  userType: 'fighter' | 'promoter';
+  location: string;
+  profilePictureUrl: string;
+};
+
+type FighterProfile = {
+  userId: number;
+  height: string;
+  weight: string;
+  record: string;
+  gymName?: string;
+  pullouts: number;
+  weightMisses: number;
+  finishes: number;
+};
+
+type PromoterProfile = {
+  userId: number;
+  promotion: string;
+  promoter: string;
+  nextEvent?: string;
+};
+
+type Post = {
+  postId: number;
+  userId: number;
+  textContent: string;
+  mediaUrls: string[];
+  createdAt: string;
+};
 
 const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -11,7 +57,265 @@ const db = new pg.Pool({
   },
 });
 
+const hashSecret = process.env.TOKEN_SECRET;
+if (!hashSecret) {
+  throw new Error('TOKEN_SECRET not found in .env');
+}
+
 const app = express();
+
+app.use(express.json());
+
+app.post('/api/auth/sign-up', async (req, res, next) => {
+  try {
+    const {
+      email,
+      fullName,
+      username,
+      password,
+      location,
+      bio,
+      profilePictureUrl,
+      userType,
+      ...rest
+    } = req.body;
+    if (
+      !userType ||
+      !email ||
+      !fullName ||
+      !username ||
+      !password ||
+      !location
+    ) {
+      throw new ClientError(400, 'a required field is missing');
+    }
+    const hashedPassword = await argon2.hash(password);
+    const sqlUsers = `
+  insert into "users" ("email", "fullName", "username", "hashedPassword", "userType", "location", "bio", "profilePictureUrl")
+  values ($1, $2, $3, $4, $5, $6, $7, $8)
+  returning "userId", "username", "createdAt";
+  `;
+    const userParams = [
+      email,
+      fullName,
+      username,
+      hashedPassword,
+      userType,
+      location,
+      bio,
+      profilePictureUrl,
+    ];
+    const result = await db.query(sqlUsers, userParams);
+    const newUser = result.rows[0];
+    const userId = newUser.userId;
+
+    if (userType === 'fighter') {
+      const {
+        height,
+        weight,
+        record,
+        gymName,
+        pullouts,
+        weightMisses,
+        finishes,
+      } = rest;
+      if (
+        !height ||
+        !weight ||
+        !record ||
+        pullouts == null ||
+        weightMisses == null ||
+        finishes == null
+      ) {
+        throw new ClientError(400, 'missing required field');
+      }
+      const sqlFighters = `
+    insert into "fighter_profile" ("userId", "height", "weight", "record", "gymName", "pullouts", "weightMisses", "finishes")
+    values ($1, $2, $3, $4, $5, $6, $7, $8);
+    `;
+      const fighterParams = [
+        userId,
+        height,
+        weight,
+        record,
+        gymName ?? null,
+        pullouts,
+        weightMisses,
+        finishes,
+      ];
+
+      await db.query(sqlFighters, fighterParams);
+    } else if (userType === 'promoter') {
+      const { promotion, promoter, nextEvent } = rest;
+
+      if (!promotion || !promoter) {
+        throw new ClientError(400, 'required field missing');
+      }
+      const sqlPromoter = `
+    insert into "promoter_profile" ("userId", "promotion", "promoter", "nextEvent")
+    values ($1, $2, $3, $4);
+    `;
+      const promoterParams = [userId, promotion, promoter, nextEvent ?? null];
+      await db.query(sqlPromoter, promoterParams);
+    } else {
+      throw new ClientError(400, 'invalid user');
+    }
+    res.status(201).json(newUser);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// app.post('/api/auth/sign-up', authMiddleware, async (req, res, next) => {
+//   try {
+//     const { email, fullName, username, password, userType, location, bio } =
+//       req.body;
+//     if (
+//       !email ||
+//       !fullName ||
+//       !username ||
+//       !password ||
+//       !userType ||
+//       !location ||
+//       !bio
+//     ) {
+//       throw new ClientError(400, 'a required field is missing');
+//     }
+//     const sqlCheck = `select * from "users"
+//     where "email" = $1 or "username" = $2;
+//     `;
+//     const checkResult = await db.query(sqlCheck, [email, username]);
+//     if (checkResult.rows.length > 0) {
+//       const existingUser = checkResult.rows[0];
+
+//       if (existingUser.email === email) {
+//         throw new ClientError(400, 'email already in use.');
+//       }
+
+//       if (existingUser.username === username) {
+//         throw new ClientError(400, 'username is taken.');
+//       }
+//     }
+//     const hashedPassword = await argon2.hash(password);
+
+//     const newUserSQL = `
+//   insert into "users" ("email", "fullName", "username", "hashedPassword", "userType", "location", "bio")
+//   values ($1, $2, $3, $4, $5, $6, $7)
+//   returning "userId", "fullName", "username", "createdAt";
+//   `;
+//     const params = [
+//       email,
+//       fullName,
+//       username,
+//       hashedPassword,
+//       userType,
+//       location,
+//       bio,
+//     ];
+//     const result = await db.query<Auth>(newUserSQL, params);
+//     const newUser = result.rows[0];
+//     res.status(201).json(newUser);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+app.post('/api/auth/sign-in', async (req, res, next) => {
+  try {
+    const { email, username, password } = req.body as Partial<Auth>;
+    if ((!email && !username) || !password) {
+      throw new ClientError(401, 'invalid login, email or username missing');
+    }
+    const sql = `
+    select "userId",
+            "hashedPassword"
+        from "users"
+        where "email" = $1 or "username" = $2;
+    `;
+    const params = [email, username];
+    const result = await db.query(sql, params);
+    const user = result.rows[0];
+    if (!user) {
+      throw new ClientError(401, 'invalid login, user not found');
+    }
+    const isPasswordValid = await argon2.verify(user.hashedPassword, password);
+    if (!isPasswordValid) {
+      throw new ClientError(401, 'invalid login, invalid password');
+    }
+    const payload = {
+      userId: user.userId,
+      username: user.username,
+    };
+    const newSignedToken = jwt.sign(payload, hashSecret);
+    res.status(200).json({
+      user: payload,
+      token: newSignedToken,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/posts', authMiddleware, async (req, res, next) => {
+  try {
+    const sql = `
+    select * from "posts"
+    where "userId" = $1
+    order by "postId" desc;
+    `;
+    const params = [req.user?.userId];
+    const result = await db.query(sql, params);
+    const total = result.rows;
+    if (!total) {
+      throw new ClientError(404, `entries not found`);
+    }
+    res.json(total);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/posts/:postId', authMiddleware, async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    if (postId === undefined) {
+      throw new ClientError(400, `postId required`);
+    }
+    const sql = `
+    select * from "posts"
+    where "postId" = $1 and "userId" = $2;
+    `;
+    const params = [postId, req.user?.userId];
+    const result = await db.query<Post>(sql, params);
+    const post = result.rows[0];
+    if (!post) {
+      throw new ClientError(404, `post ${postId} not found`);
+    }
+    res.json(post);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/posts', authMiddleware, async (req, res, next) => {
+  try {
+    const { textContent, mediaUrls } = req.body;
+    if (!textContent && !mediaUrls) {
+      throw new ClientError(400, `post must have text or media`);
+    }
+    const sql = `
+    insert into "posts" ("textContent", "mediaUrls", "userId")
+    values ($1, $2, $3)
+    returning *;
+    `;
+    const params = [textContent, mediaUrls, req.user?.userId];
+    const result = await db.query(sql, params);
+    const post = result.rows[0];
+    res.status(201).json(post);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Create paths for static directories
 const reactStaticDir = new URL('../client/dist', import.meta.url).pathname;
@@ -37,4 +341,5 @@ app.use(errorMiddleware);
 
 app.listen(process.env.PORT, () => {
   console.log('Listening on port', process.env.PORT);
+  console.log('Punch It FullStack');
 });

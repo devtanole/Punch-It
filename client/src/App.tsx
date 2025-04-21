@@ -1,35 +1,21 @@
-import { useEffect, useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import './App.css';
+import { Header } from './components/Header';
+import { UserProvider } from './components/UserContext';
+import { Route, Routes } from 'react-router-dom';
+import { AuthPage } from './pages/AuthPage';
+
+// className = 'block border border-gray-600 rounded p-2 h-8 w-full mb-2';
 
 export default function App() {
-  const [serverData, setServerData] = useState('');
-
-  useEffect(() => {
-    async function readServerData() {
-      const resp = await fetch('/api/hello');
-      const data = await resp.json();
-
-      console.log('Data from server:', data);
-
-      setServerData(data.message);
-    }
-
-    readServerData();
-  }, []);
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>{serverData}</h1>
-    </>
+    <UserProvider>
+      <Routes>
+        <Route path="/" element={<Header />}>
+          {/* path="/auth/sign-up" */}
+          <Route index element={<AuthPage mode="sign-up" />} />
+          <Route path="/auth/sign-in" element={<AuthPage mode="sign-in" />} />
+        </Route>
+      </Routes>
+    </UserProvider>
   );
 }
