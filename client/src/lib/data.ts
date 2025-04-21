@@ -60,7 +60,29 @@ export async function readPost(postId: number): Promise<Post | undefined> {
   return (await res.json()) as Post;
 }
 
-// export async function addPost(post: Post): Promise<Post> {
-//   const token = readToken();
-//   const
-// }
+export async function addPost(post: Post): Promise<Post> {
+  const token = readToken();
+  const req = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(post),
+  };
+  const res = await fetch('/api/posts', req);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  return (await res.json()) as Post;
+}
+
+export async function removePost(postId: number): Promise<void> {
+  const token = readToken();
+  const req = {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const res = await fetch(`/api/posts/${postId}`, req);
+  if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
+}

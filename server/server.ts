@@ -166,60 +166,6 @@ app.post('/api/auth/sign-up', async (req, res, next) => {
   }
 });
 
-// app.post('/api/auth/sign-up', authMiddleware, async (req, res, next) => {
-//   try {
-//     const { email, fullName, username, password, userType, location, bio } =
-//       req.body;
-//     if (
-//       !email ||
-//       !fullName ||
-//       !username ||
-//       !password ||
-//       !userType ||
-//       !location ||
-//       !bio
-//     ) {
-//       throw new ClientError(400, 'a required field is missing');
-//     }
-//     const sqlCheck = `select * from "users"
-//     where "email" = $1 or "username" = $2;
-//     `;
-//     const checkResult = await db.query(sqlCheck, [email, username]);
-//     if (checkResult.rows.length > 0) {
-//       const existingUser = checkResult.rows[0];
-
-//       if (existingUser.email === email) {
-//         throw new ClientError(400, 'email already in use.');
-//       }
-
-//       if (existingUser.username === username) {
-//         throw new ClientError(400, 'username is taken.');
-//       }
-//     }
-//     const hashedPassword = await argon2.hash(password);
-
-//     const newUserSQL = `
-//   insert into "users" ("email", "fullName", "username", "hashedPassword", "userType", "location", "bio")
-//   values ($1, $2, $3, $4, $5, $6, $7)
-//   returning "userId", "fullName", "username", "createdAt";
-//   `;
-//     const params = [
-//       email,
-//       fullName,
-//       username,
-//       hashedPassword,
-//       userType,
-//       location,
-//       bio,
-//     ];
-//     const result = await db.query<Auth>(newUserSQL, params);
-//     const newUser = result.rows[0];
-//     res.status(201).json(newUser);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
 app.post('/api/auth/sign-in', async (req, res, next) => {
   try {
     const { email, username, password } = req.body as Partial<Auth>;
