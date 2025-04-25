@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPencilAlt } from 'react-icons/fa';
 import { Post, readPosts } from '../lib/data';
-import { User, useUser } from '../components/useUser';
+import { useUser } from '../components/useUser';
 import { Comments } from './Comments';
 
 export function PostFeed() {
@@ -15,7 +15,7 @@ export function PostFeed() {
     async function load() {
       try {
         const posts = await readPosts();
-        console.log(posts);
+        console.log('is it here:', posts);
         setPosts(posts);
       } catch (err) {
         setError(err);
@@ -53,7 +53,7 @@ export function PostFeed() {
         <div className="column-full">
           <ul className="post-ul">
             {posts?.map((post) => (
-              <PostCard key={post.postId} post={post} user={user} />
+              <PostCard key={post.postId} post={post} />
             ))}
           </ul>
         </div>
@@ -64,19 +64,19 @@ export function PostFeed() {
 
 type PostProps = {
   post: Post;
-  user: User;
 };
 
 function PostCard({ post }: PostProps) {
+  console.log('who:', post);
   return (
     <li className="post-card">
       <div className="row">
         <div className="column-half">
           <div className="post-header d-flex justify-between align-center">
             <span className="username d-flex align-center">
-              {post.profilePicture ? (
+              {post.profilePictureUrl ? (
                 <img
-                  src={post.profilePicture}
+                  src={post.profilePictureUrl}
                   alt={`${post.username}'s profile`}
                   className="profile-picture"
                   style={{
@@ -101,8 +101,10 @@ function PostCard({ post }: PostProps) {
                   }}
                 />
               )}
-              <strong>{post.username}</strong>
             </span>
+            <div className="row">
+              <p>{post.username}</p>
+            </div>
             <Link to={`details/${post.postId}`}>
               <FaPencilAlt />
             </Link>

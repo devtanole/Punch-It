@@ -5,7 +5,7 @@ export type Post = {
   mediaUrls: string[];
   createdAt: string;
   username: string;
-  profilePicture: string;
+  profilePictureUrl: string;
 };
 
 export type NewPost = {
@@ -17,7 +17,7 @@ export type Comment = {
   commentId: number;
   postId: number;
   userId: number;
-  profilePicture: string;
+  profilePictureUrl: string;
   username: string;
   text: string;
   createdAt: string;
@@ -72,7 +72,7 @@ export async function readPosts(): Promise<Post[]> {
       Authorization: `Bearer ${token}`,
     },
   };
-  const res = await fetch('/api/posts', req);
+  const res = await fetch('/api/feed', req);
   if (!res.ok) throw new Error(`fetch Error ${res.status}`);
   return (await res.json()) as Post[];
 }
@@ -115,8 +115,10 @@ export async function addPost(post: NewPost): Promise<Post> {
     body: JSON.stringify(post),
   };
   const res = await fetch('/api/posts', req);
+  const data = await res.json();
+  console.log('server response:', data);
   if (!res.ok) throw new Error(`fetch Error ${res.status}`);
-  return (await res.json()) as Post;
+  return data as Post;
 }
 
 export async function addComment(

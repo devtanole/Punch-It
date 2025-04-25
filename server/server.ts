@@ -230,6 +230,7 @@ app.get('/api/feed', async (req, res, next) => {
     order by p."postId" desc;
     `;
     const result = await db.query(sql);
+    console.log('backend:', result.rows);
     res.json(result.rows);
   } catch (err) {
     next(err);
@@ -258,21 +259,56 @@ app.get('/api/posts/:postId', authMiddleware, async (req, res, next) => {
   }
 });
 
+// app.post('/api/posts', authMiddleware, async (req, res, next) => {
+//   try {
+//     const { textContent, mediaUrls } = req.body;
+//     if (!textContent && !mediaUrls) {
+//       throw new ClientError(400, `post must have text or media`);
+//     }
+//     const sql = `
+//     insert into "posts" ("textContent", "mediaUrls", "userId")
+//     values ($1, $2, $3)
+//     returning *;
+//     `;
+//     const params = [textContent, mediaUrls, req.user?.userId];
+//     const result = await db.query(sql, params);
+//     const post = result.rows[0];
+//     res.status(201).json(post);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
 app.post('/api/posts', authMiddleware, async (req, res, next) => {
   try {
     const { textContent, mediaUrls } = req.body;
-    if (!textContent && !mediaUrls) {
-      throw new ClientError(400, `post must have text or media`);
+    const userId = req.user?.userId;
+
+    if (!textContent && (!mediaUrls || mediaUrls.length === 0)) {
+      throw new ClientError(400, 'Post must have text or media');
     }
-    const sql = `
-    insert into "posts" ("textContent", "mediaUrls", "userId")
-    values ($1, $2, $3)
-    returning *;
+
+    const insertSql = `
+      INSERT INTO "posts" ("textContent", "mediaUrls", "userId")
+      VALUES ($1, $2, $3)
+      RETURNING "postId";
     `;
-    const params = [textContent, mediaUrls, req.user?.userId];
-    const result = await db.query(sql, params);
-    const post = result.rows[0];
-    res.status(201).json(post);
+    const insertParams = [textContent, mediaUrls, userId];
+    const insertResult = await db.query(insertSql, insertParams);
+    const { postId } = insertResult.rows[0];
+
+    const fetchSql = `
+      SELECT p.*, u."username", u."profilePictureUrl"
+      FROM "posts" AS p
+      JOIN "users" AS u USING ("userId")
+      WHERE p."postId" = $1;
+    `;
+    const fetchResult = await db.query(fetchSql, [postId]);
+    const fullPost = fetchResult.rows[0];
+
+    if (!fullPost) throw new ClientError(404, 'Post not found after insert');
+
+    res.status(201).json(fullPost);
   } catch (err) {
     next(err);
   }

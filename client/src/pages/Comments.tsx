@@ -50,9 +50,9 @@ export function Comments({ postId }: CommentProps) {
       <ul>
         {comments.map((c) => (
           <li key={c.commentId}>
-            {c.profilePicture ? (
+            {c.profilePictureUrl ? (
               <img
-                src={c.profilePicture}
+                src={c.profilePictureUrl}
                 alt={`${c.username}'s profile`}
                 className="profile-picture"
                 style={{
