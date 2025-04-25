@@ -4,6 +4,8 @@ export type Post = {
   textContent: string;
   mediaUrls: string[];
   createdAt: string;
+  username: string;
+  profilePicture: string;
 };
 
 export type NewPost = {
@@ -15,6 +17,7 @@ export type Comment = {
   commentId: number;
   postId: number;
   userId: number;
+  profilePicture: string;
   username: string;
   text: string;
   createdAt: string;
@@ -127,9 +130,9 @@ export async function addComment(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ postId, text }),
+    body: JSON.stringify({ text }),
   };
-  const res = await fetch('/api/comments', req);
+  const res = await fetch(`/api/posts/${postId}/comments`, req);
   if (!res.ok) throw new Error(`fetch Error ${res.status}`);
   return (await res.json()) as Comment;
 }

@@ -278,32 +278,43 @@ app.post('/api/posts', authMiddleware, async (req, res, next) => {
   }
 });
 
-app.post('/api/comments', authMiddleware, async (req, res, next) => {
-  try {
-    const { postId, userId, text } = req.body;
-    // const userId = req.user?.userId;
-    if (!text || !postId) {
-      throw new ClientError(400, 'Missing comment text or post ID');
-    }
-    const sql = `
+app.post(
+  '/api/posts/:postId/comments',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const postId = req.params.postId;
+      const userId = req.user?.userId;
+      const { text } = req.body;
+      console.log('comment request:', {
+        postId,
+        userId,
+        text,
+      });
+
+      if (!text || !postId || !userId) {
+        throw new ClientError(400, 'Missing comment text or post ID');
+      }
+      const sql = `
     insert into "comments" ("postId", "userId", "text")
     values ($1, $2, $3)
     returning *;
     `;
-    const params = [postId, userId, text];
-    const result = await db.query(sql, params);
-    const comment = result.rows[0];
-    res.status(201).json(comment);
-  } catch (err) {
-    next(err);
+      const params = [postId, userId, text];
+      const result = await db.query(sql, params);
+      const comment = result.rows[0];
+      res.status(201).json(comment);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 app.get('/api/posts/:postId/comments', async (req, res, next) => {
   try {
     const { postId } = req.params;
     const sql = `
-    select c.*, u.username
+    select c.*, u."username", u."profilePictureUrl"
     from "comments" as c
     join "users" u using ("userId")
     where "postId" = $1

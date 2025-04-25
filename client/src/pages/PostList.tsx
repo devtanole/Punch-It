@@ -15,6 +15,7 @@ export function PostFeed() {
     async function load() {
       try {
         const posts = await readPosts();
+        console.log(posts);
         setPosts(posts);
       } catch (err) {
         setError(err);
@@ -22,8 +23,9 @@ export function PostFeed() {
         setIsLoading(false);
       }
     }
+    console.log(user);
     if (user) load();
-  }, []);
+  }, [user]);
   if (!user) return <div>Login to continue</div>;
   if (isLoading) return <div>Loading...</div>;
   if (error) {
@@ -65,13 +67,42 @@ type PostProps = {
   user: User;
 };
 
-function PostCard({ post, user }: PostProps) {
+function PostCard({ post }: PostProps) {
   return (
     <li className="post-card">
       <div className="row">
         <div className="column-half">
           <div className="post-header d-flex justify-between align-center">
-            <span className="username">{user.username}</span>
+            <span className="username d-flex align-center">
+              {post.profilePicture ? (
+                <img
+                  src={post.profilePicture}
+                  alt={`${post.username}'s profile`}
+                  className="profile-picture"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    marginBottom: 12,
+                  }}
+                />
+              ) : (
+                <img
+                  src="/images/AvatarDefault.webp"
+                  alt="Default avatar"
+                  className="default-avatar"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    marginBottom: 12,
+                  }}
+                />
+              )}
+              <strong>{post.username}</strong>
+            </span>
             <Link to={`details/${post.postId}`}>
               <FaPencilAlt />
             </Link>
@@ -79,7 +110,8 @@ function PostCard({ post, user }: PostProps) {
               {new Date(post.createdAt).toLocaleDateString()}
             </span>
           </div>
-          {post.textContent && (
+          <p>{post.textContent}</p>
+          {post.mediaUrls.length > 0 && (
             <div className="media-array margin-top-1">
               {post.mediaUrls.map((url, index) =>
                 url.match(/\.(mp4|mov|webm)$/i) ? (
