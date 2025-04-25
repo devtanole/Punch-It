@@ -1,13 +1,13 @@
 import axios from 'axios';
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 export interface avatarProps {
   onUpload: (url: string) => void;
-  defaultAvi?: string;
+  preview: string;
+  setPreview: (preview: string) => void;
 }
 
-export function UserAvatar({ onUpload, defaultAvi }: avatarProps) {
-  const [preview, setPreview] = useState<string | undefined>(defaultAvi);
+export function UserAvatar({ onUpload, preview, setPreview }: avatarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (file: File) => {
@@ -35,7 +35,7 @@ export function UserAvatar({ onUpload, defaultAvi }: avatarProps) {
   return (
     <div style={{ textAlign: 'center' }}>
       <img
-        src={preview || 'https://via.placeholder.com/150'}
+        src={preview || '/images/AvatarDefault'}
         alt="picture preview"
         style={{
           width: 120,

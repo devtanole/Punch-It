@@ -1,8 +1,22 @@
 export type Post = {
-  postId?: number;
+  postId: number;
   userId: number;
   textContent: string;
   mediaUrls: string[];
+  createdAt: string;
+};
+
+export type NewPost = {
+  textContent: string;
+  mediaUrls: string[];
+};
+
+export type Comment = {
+  commentId: number;
+  postId: number;
+  userId: number;
+  username: string;
+  text: string;
   createdAt: string;
 };
 
@@ -36,6 +50,18 @@ export function readToken(): string | undefined {
   return (JSON.parse(auth) as Auth).token;
 }
 
+export async function readComments(postId: number): Promise<Comment[]> {
+  const token = readToken();
+  const req = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const res = await fetch(`/api/posts/${postId}/comments`, req);
+  if (!res.ok) throw new Error(`Failed to fetch comments for post ${postId}`);
+  return (await res.json()) as Comment[];
+}
+
 export async function readPosts(): Promise<Post[]> {
   const token = readToken();
   const req = {
@@ -60,7 +86,22 @@ export async function readPost(postId: number): Promise<Post | undefined> {
   return (await res.json()) as Post;
 }
 
-export async function addPost(post: Post): Promise<Post> {
+export async function updatePost(post: Post): Promise<Post> {
+  const token = readToken();
+  const req = {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(post),
+  };
+  const res = await fetch(`/api/posts/${post.postId}`, req);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  return (await res.json()) as Post;
+}
+
+export async function addPost(post: NewPost): Promise<Post> {
   const token = readToken();
   const req = {
     method: 'POST',
@@ -73,6 +114,24 @@ export async function addPost(post: Post): Promise<Post> {
   const res = await fetch('/api/posts', req);
   if (!res.ok) throw new Error(`fetch Error ${res.status}`);
   return (await res.json()) as Post;
+}
+
+export async function addComment(
+  postId: number,
+  text: string
+): Promise<Comment> {
+  const token = readToken();
+  const req = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ postId, text }),
+  };
+  const res = await fetch('/api/comments', req);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  return (await res.json()) as Comment;
 }
 
 export async function removePost(postId: number): Promise<void> {

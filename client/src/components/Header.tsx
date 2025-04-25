@@ -1,8 +1,15 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { useUser } from './useUser';
 
 //later on add conditional render for logout button
 
 export function Header() {
+  const { user, handleSignOut } = useUser();
+  const navigate = useNavigate();
+  function handleClick(): void {
+    handleSignOut();
+    navigate('/');
+  }
   return (
     <>
       <header className="border-b border-gray-200 mt-0 w-full">
@@ -27,9 +34,17 @@ export function Header() {
               </span>
             </li>
           </ul>
+          {user ? (
+            <button onClick={handleClick} className="entries-link white-text">
+              <h3>Sign Out</h3>
+            </button>
+          ) : (
+            <Link to="/auth/sign-in" className="entries-link white-text">
+              <h3>Sign In</h3>
+            </Link>
+          )}
         </nav>
       </header>
-
       <Outlet />
     </>
   );
