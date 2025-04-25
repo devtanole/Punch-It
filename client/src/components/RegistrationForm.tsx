@@ -9,24 +9,27 @@ import {
 } from './ConditionalFormFields';
 import { UserAvatar } from './UserAvatar';
 
+const defaultAvi = '/images/AvatarDefault';
+
 export function RegistrationForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<'fighter' | 'promoter'>('fighter');
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string>(defaultAvi);
   const navigate = useNavigate();
 
   const [fighterFormData, setFighterFormData] = useState<FighterProps>({
     weight: 0,
     height: '',
     record: '',
+    gymName: '',
     pullouts: 0,
     weightMisses: 0,
     finishes: 0,
   });
 
   const [promoterFormData, setPromoterFormData] = useState<PromoterProps>({
-    promotion: 0,
-    promoter: 0,
+    promotion: '',
+    promoter: '',
     nextEvent: '',
   });
 
@@ -43,11 +46,10 @@ export function RegistrationForm() {
             : value,
       });
     } else {
-      setPromoterFormData({
-        ...promoterFormData,
-        [name]:
-          name === 'promotion' || name === 'promoter' ? parseInt(value) : value,
-      });
+      setPromoterFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
@@ -66,9 +68,9 @@ export function RegistrationForm() {
         ...userData,
         ...(userType === 'fighter' ? fighterFormData : promoterFormData),
         userType,
-        profilePicture,
+        profilePictureUrl: preview,
       };
-
+      console.log('fullUserData:', fullUserData);
       const req = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -99,8 +101,9 @@ export function RegistrationForm() {
             <label className="mb-1 block">
               Profile Picture
               <UserAvatar
-                onUpload={(url) => setProfilePicture(url)}
-                defaultAvi={profilePicture ?? undefined}
+                onUpload={(url) => setPreview(url)}
+                preview={preview}
+                setPreview={setPreview}
               />
               {/* <input
                 required
@@ -187,7 +190,7 @@ export function RegistrationForm() {
           Sign Up
         </button>
       </form>
-      <Link to="/users/sign-in" className="ml-2">
+      <Link to="/auth/sign-in" className="ml-2">
         Sign In
       </Link>
     </div>

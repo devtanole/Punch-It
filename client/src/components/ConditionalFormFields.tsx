@@ -9,8 +9,8 @@ export type FighterProps = {
 };
 
 export type PromoterProps = {
-  promotion: number;
-  promoter: number;
+  promotion: string;
+  promoter: string;
   nextEvent?: string;
 };
 
@@ -38,7 +38,9 @@ export function ConditionalFormFields({
               required
               type="number"
               name="weight"
-              value={fighterFormData.weight}
+              value={
+                isNaN(fighterFormData.weight) ? '' : fighterFormData.weight
+              }
               onChange={(e) => onChange('weight', e.target.value)}
               className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
             />
@@ -83,7 +85,9 @@ export function ConditionalFormFields({
               type="number"
               name="pullouts"
               className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              value={fighterFormData.pullouts}
+              value={
+                isNaN(fighterFormData.pullouts) ? '' : fighterFormData.pullouts
+              }
               onChange={(e) => onChange('pullouts', e.target.value)}
             />
           </label>
@@ -94,7 +98,11 @@ export function ConditionalFormFields({
               type="number"
               name="weightMisses"
               className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              value={fighterFormData.weightMisses}
+              value={
+                isNaN(fighterFormData.weightMisses)
+                  ? ''
+                  : fighterFormData.weightMisses
+              }
               onChange={(e) => onChange('weightMisses', e.target.value)}
             />
           </label>
@@ -105,7 +113,9 @@ export function ConditionalFormFields({
               type="number"
               className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
               name="finishes"
-              value={fighterFormData.finishes}
+              value={
+                isNaN(fighterFormData.finishes) ? '' : fighterFormData.finishes
+              }
               onChange={(e) => onChange('finishes', e.target.value)}
             />
           </label>

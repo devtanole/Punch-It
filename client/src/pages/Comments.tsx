@@ -1,0 +1,65 @@
+import React, { useState, useEffect } from 'react';
+import { Comment } from '../lib/data';
+import { readComments, addComment } from '../lib/data';
+// import { Post } from "../lib/data";
+
+type CommentProps = {
+  postId: number;
+};
+
+export function Comments({ postId }: CommentProps) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [error, setError] = useState<unknown>();
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const comments = await readComments(postId);
+        setComments(comments);
+      } catch (err) {
+        setError(err);
+      }
+    }
+    load();
+  }, [postId]);
+
+  if (error) {
+    return (
+      <div>
+        Error Loading Comments:{' '}
+        {error instanceof Error ? error.message : 'Unknown Error'}
+      </div>
+    );
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const comment = await addComment(postId, newComment);
+    setComments([...comments, comment]);
+    setNewComment('');
+  }
+
+  return (
+    <div className="container">
+      <ul>
+        {comments.map((c) => (
+          <li key={c.commentId}>
+            <p>
+              {c.username}: {c.text}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={newComment}
+          placeholder="Add a comment..."
+          onChange={(e) => setNewComment(e.target.value)}
+        />
+        <button type="submit">Post</button>
+      </form>
+    </div>
+  );
+}

@@ -166,60 +166,6 @@ app.post('/api/auth/sign-up', async (req, res, next) => {
   }
 });
 
-// app.post('/api/auth/sign-up', authMiddleware, async (req, res, next) => {
-//   try {
-//     const { email, fullName, username, password, userType, location, bio } =
-//       req.body;
-//     if (
-//       !email ||
-//       !fullName ||
-//       !username ||
-//       !password ||
-//       !userType ||
-//       !location ||
-//       !bio
-//     ) {
-//       throw new ClientError(400, 'a required field is missing');
-//     }
-//     const sqlCheck = `select * from "users"
-//     where "email" = $1 or "username" = $2;
-//     `;
-//     const checkResult = await db.query(sqlCheck, [email, username]);
-//     if (checkResult.rows.length > 0) {
-//       const existingUser = checkResult.rows[0];
-
-//       if (existingUser.email === email) {
-//         throw new ClientError(400, 'email already in use.');
-//       }
-
-//       if (existingUser.username === username) {
-//         throw new ClientError(400, 'username is taken.');
-//       }
-//     }
-//     const hashedPassword = await argon2.hash(password);
-
-//     const newUserSQL = `
-//   insert into "users" ("email", "fullName", "username", "hashedPassword", "userType", "location", "bio")
-//   values ($1, $2, $3, $4, $5, $6, $7)
-//   returning "userId", "fullName", "username", "createdAt";
-//   `;
-//     const params = [
-//       email,
-//       fullName,
-//       username,
-//       hashedPassword,
-//       userType,
-//       location,
-//       bio,
-//     ];
-//     const result = await db.query<Auth>(newUserSQL, params);
-//     const newUser = result.rows[0];
-//     res.status(201).json(newUser);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
 app.post('/api/auth/sign-in', async (req, res, next) => {
   try {
     const { email, username, password } = req.body as Partial<Auth>;
@@ -275,6 +221,21 @@ app.get('/api/posts', authMiddleware, async (req, res, next) => {
   }
 });
 
+app.get('/api/feed', async (req, res, next) => {
+  try {
+    const sql = `
+    select p.*, u."username", u."profilePictureUrl"
+    from "posts" as p
+    join "users" as u using ("userId")
+    order by p."postId" desc;
+    `;
+    const result = await db.query(sql);
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('/api/posts/:postId', authMiddleware, async (req, res, next) => {
   try {
     const { postId } = req.params;
@@ -312,6 +273,93 @@ app.post('/api/posts', authMiddleware, async (req, res, next) => {
     const result = await db.query(sql, params);
     const post = result.rows[0];
     res.status(201).json(post);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/comments', authMiddleware, async (req, res, next) => {
+  try {
+    const { postId, userId, text } = req.body;
+    // const userId = req.user?.userId;
+    if (!text || !postId) {
+      throw new ClientError(400, 'Missing comment text or post ID');
+    }
+    const sql = `
+    insert into "comments" ("postId", "userId", "text")
+    values ($1, $2, $3)
+    returning *;
+    `;
+    const params = [postId, userId, text];
+    const result = await db.query(sql, params);
+    const comment = result.rows[0];
+    res.status(201).json(comment);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/posts/:postId/comments', async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    const sql = `
+    select c.*, u.username
+    from "comments" as c
+    join "users" u using ("userId")
+    where "postId" = $1
+    order by "createdAt";
+    `;
+    const result = await db.query(sql, [postId]);
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/posts/:postId', authMiddleware, async (req, res, next) => {
+  try {
+    const postId = Number(req.params.postId);
+    if (!Number.isInteger(postId) || postId < 1) {
+      throw new ClientError(400, 'postId must be a positive integer');
+    }
+    const { textContent, mediaUrls } = req.body;
+    const sql = `
+    update "posts"
+    set "updatedAt" = now(),
+        "textContent" = $1,
+        "mediaUrls" = $2
+      where "postId" = $3 and "userId" = $4
+      returning *;
+    `;
+    const params = [textContent, mediaUrls, postId, req.user?.userId];
+    console.log(' req.user?.userId:', req.user?.userId);
+    const result = await db.query(sql, params);
+    const updatedPost = result.rows[0];
+    if (!updatedPost) {
+      throw new ClientError(404, `cannot find post of post Id ${postId}`);
+    }
+    res.json(updatedPost);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/api/posts/:postId', authMiddleware, async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    if (!Number.isInteger(+postId)) {
+      throw new ClientError(400, `Non-integer postId: ${postId}`);
+    }
+    const deletePostSql = `
+    delete from "posts"
+    where "postId" = $1 and "userId" = $2
+    returning *;
+    `;
+    const params = [postId, req.user?.userId];
+    const result = await db.query(deletePostSql, params);
+    const [post] = result.rows;
+    if (!post) throw new ClientError(404, `post ${postId} not found`);
+    res.status(204).json(post);
   } catch (err) {
     next(err);
   }

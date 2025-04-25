@@ -42,7 +42,17 @@ CREATE TABLE "posts" (
   "userId" int,
   "textContent" text NOT NULL,
   "mediaUrls" text[],
-  "createdAt" timestamptz NOT NULL DEFAULT 'now()'
+  "createdAt" timestamptz NOT NULL DEFAULT 'now()',
+  "updatedAt"      timestamptz not null default 'now()'
+
+);
+
+CREATE TABLE "comments" (
+  "commentId" serial PRIMARY KEY,
+  "postId" integer not null references "posts"("postId") on delete cascade,
+  "userId" integer not null references "users"("userId") on delete cascade,
+  "text" text not null,
+  "createdAt" timestamptz not null default now()
 );
 
 ALTER TABLE "fighter_profile" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
