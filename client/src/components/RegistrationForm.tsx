@@ -9,12 +9,12 @@ import {
 } from './ConditionalFormFields';
 import { UserAvatar } from './UserAvatar';
 
-const defaultAvi = '/images/AvatarDefault';
+// const defaultAvi = '/images/AvatarDefault';
 
 export function RegistrationForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<'fighter' | 'promoter'>('fighter');
-  const [preview, setPreview] = useState<string>(defaultAvi);
+  const [preview, setPreview] = useState<string>('/images/AvatarDefault');
   const navigate = useNavigate();
 
   const [fighterFormData, setFighterFormData] = useState<FighterProps>({

@@ -35,9 +35,14 @@ export function Comments({ postId }: CommentProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const comment = await addComment(postId, newComment);
-    setComments([...comments, comment]);
-    setNewComment('');
+    if (!newComment.trim()) return;
+    try {
+      const comment = await addComment(postId, newComment);
+      setComments([...comments, comment]);
+      setNewComment('');
+    } catch (err) {
+      console.error('Failed to add comment:', err);
+    }
   }
 
   return (
@@ -45,6 +50,32 @@ export function Comments({ postId }: CommentProps) {
       <ul>
         {comments.map((c) => (
           <li key={c.commentId}>
+            {c.profilePictureUrl ? (
+              <img
+                src={c.profilePictureUrl}
+                alt={`${c.username}'s profile`}
+                className="profile-picture"
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  marginBottom: 12,
+                }}
+              />
+            ) : (
+              <img
+                className="default-avatar"
+                src="/images/AvatarDefault.webp"
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  marginBottom: 12,
+                }}
+              />
+            )}
             <p>
               {c.username}: {c.text}
             </p>
@@ -58,7 +89,7 @@ export function Comments({ postId }: CommentProps) {
           placeholder="Add a comment..."
           onChange={(e) => setNewComment(e.target.value)}
         />
-        <button type="submit">Post</button>
+        <button type="submit">Comment</button>
       </form>
     </div>
   );

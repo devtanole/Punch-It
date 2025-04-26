@@ -12,6 +12,10 @@ export type User = {
   userType: 'fighter' | 'promoter';
 };
 
+// export type AuthorInfo = {
+//   userId: number;
+// };
+
 export type FighterUser = User & {
   weight: number;
   height: string;

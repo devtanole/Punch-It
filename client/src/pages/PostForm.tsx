@@ -60,9 +60,12 @@ export function PostForm() {
       if (isEditing && post) {
         await updatePost({ ...post, ...newPost });
       } else {
-        await addPost(newPost);
+        const createdPost = await addPost(newPost);
+        alert(
+          `Successfully posted ${createdPost.postId} from userId ${createdPost.userId}.`
+        );
       }
-      alert(`Successfully posted ${post?.postId} from userId ${post?.userId}.`);
+
       navigate('/');
     } catch (err) {
       console.error(err);

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPencilAlt } from 'react-icons/fa';
 import { Post, readPosts } from '../lib/data';
-import { User, useUser } from '../components/useUser';
+import { useUser } from '../components/useUser';
 import { Comments } from './Comments';
 
 export function PostFeed() {
@@ -15,6 +15,7 @@ export function PostFeed() {
     async function load() {
       try {
         const posts = await readPosts();
+        console.log('is it here:', posts);
         setPosts(posts);
       } catch (err) {
         setError(err);
@@ -22,8 +23,9 @@ export function PostFeed() {
         setIsLoading(false);
       }
     }
+    console.log(user);
     if (user) load();
-  }, []);
+  }, [user]);
   if (!user) return <div>Login to continue</div>;
   if (isLoading) return <div>Loading...</div>;
   if (error) {
@@ -51,7 +53,7 @@ export function PostFeed() {
         <div className="column-full">
           <ul className="post-ul">
             {posts?.map((post) => (
-              <PostCard key={post.postId} post={post} user={user} />
+              <PostCard key={post.postId} post={post} />
             ))}
           </ul>
         </div>
@@ -62,16 +64,47 @@ export function PostFeed() {
 
 type PostProps = {
   post: Post;
-  user: User;
 };
 
-function PostCard({ post, user }: PostProps) {
+function PostCard({ post }: PostProps) {
+  console.log('who:', post);
   return (
     <li className="post-card">
       <div className="row">
         <div className="column-half">
           <div className="post-header d-flex justify-between align-center">
-            <span className="username">{user.username}</span>
+            <span className="username d-flex align-center">
+              {post.profilePictureUrl ? (
+                <img
+                  src={post.profilePictureUrl}
+                  alt={`${post.username}'s profile`}
+                  className="profile-picture"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    marginBottom: 12,
+                  }}
+                />
+              ) : (
+                <img
+                  src="/images/AvatarDefault.webp"
+                  alt="Default avatar"
+                  className="default-avatar"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    marginBottom: 12,
+                  }}
+                />
+              )}
+            </span>
+            <div className="row">
+              <p>{post.username}</p>
+            </div>
             <Link to={`details/${post.postId}`}>
               <FaPencilAlt />
             </Link>
@@ -79,7 +112,8 @@ function PostCard({ post, user }: PostProps) {
               {new Date(post.createdAt).toLocaleDateString()}
             </span>
           </div>
-          {post.textContent && (
+          <p>{post.textContent}</p>
+          {post.mediaUrls.length > 0 && (
             <div className="media-array margin-top-1">
               {post.mediaUrls.map((url, index) =>
                 url.match(/\.(mp4|mov|webm)$/i) ? (
