@@ -1,3 +1,5 @@
+import { TextField } from '@mui/material';
+
 export type FighterProps = {
   weight: number;
   height: string;
@@ -32,128 +34,110 @@ export function ConditionalFormFields({
       <h3>{userType === 'fighter' ? 'Fighter' : 'Promoter'} Account</h3>
       {userType === 'fighter' ? (
         <>
-          <label>
-            Weight
-            <input
-              required
-              type="number"
-              name="weight"
-              value={
-                isNaN(fighterFormData.weight) ? '' : fighterFormData.weight
-              }
-              onChange={(e) => onChange('weight', e.target.value)}
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-            />
-          </label>
-          <label>
-            Height
-            <input
-              required
-              type="text"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              name="height"
-              value={fighterFormData.height}
-              onChange={(e) => onChange('height', e.target.value)}
-            />
-          </label>
-          <label>
-            Record
-            <input
-              required
-              type="text"
-              name="record"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              value={fighterFormData.record}
-              onChange={(e) => onChange('record', e.target.value)}
-            />
-          </label>
-          <label>
-            Gym Name
-            <input
-              required
-              type="text"
-              name="gymName"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              value={fighterFormData.gymName}
-              onChange={(e) => onChange('gymName', e.target.value)}
-            />
-          </label>
-          <label>
-            Pullouts
-            <input
-              required
-              type="number"
-              name="pullouts"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              value={
-                isNaN(fighterFormData.pullouts) ? '' : fighterFormData.pullouts
-              }
-              onChange={(e) => onChange('pullouts', e.target.value)}
-            />
-          </label>
-          <label>
-            Weight Misses
-            <input
-              required
-              type="number"
-              name="weightMisses"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              value={
-                isNaN(fighterFormData.weightMisses)
-                  ? ''
-                  : fighterFormData.weightMisses
-              }
-              onChange={(e) => onChange('weightMisses', e.target.value)}
-            />
-          </label>
-          <label>
-            Finishes
-            <input
-              required
-              type="number"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              name="finishes"
-              value={
-                isNaN(fighterFormData.finishes) ? '' : fighterFormData.finishes
-              }
-              onChange={(e) => onChange('finishes', e.target.value)}
-            />
-          </label>
+          <TextField
+            label="Weight"
+            type="number"
+            name="weight"
+            required
+            fullWidth
+            value={fighterFormData.weight || ''}
+            onChange={(e) => onChange('weight', e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Height"
+            type="text"
+            name="height"
+            required
+            fullWidth
+            value={fighterFormData.height}
+            onChange={(e) => onChange('height', e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Record"
+            type="text"
+            name="record"
+            required
+            fullWidth
+            value={fighterFormData.record}
+            onChange={(e) => onChange('record', e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Gym Name"
+            type="text"
+            name="gymName"
+            fullWidth
+            value={fighterFormData.gymName}
+            onChange={(e) => onChange('gymName', e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Pullouts"
+            type="number"
+            name="pullouts"
+            required
+            fullWidth
+            value={fighterFormData.pullouts || ''}
+            onChange={(e) => onChange('pullouts', e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Weight Misses"
+            type="number"
+            name="weightMisses"
+            required
+            fullWidth
+            value={fighterFormData.weightMisses || ''}
+            onChange={(e) => onChange('weightMisses', e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Finishes"
+            type="number"
+            name="finishes"
+            required
+            fullWidth
+            value={fighterFormData.finishes || ''}
+            onChange={(e) => onChange('finishes', e.target.value)}
+            margin="normal"
+          />
         </>
       ) : (
         <>
-          <label>
-            Promotion
-            <input
-              required
-              type="text"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              name="promotion"
-              value={promoterFormData.promotion}
-              onChange={(e) => onChange('promotion', e.target.value)}
-            />
-          </label>
-          <label>
-            Promoter
-            <input
-              required
-              type="text"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              name="promoter"
-              value={promoterFormData.promoter}
-              onChange={(e) => onChange('promoter', e.target.value)}
-            />
-          </label>
-          <label>
-            Next Event
-            <input
-              type="date"
-              name="nextEvent"
-              className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              value={promoterFormData.nextEvent}
-              onChange={(e) => onChange('nextEvent', e.target.value)}
-            />
-          </label>
+          <TextField
+            label="Promotion"
+            type="text"
+            name="promotion"
+            required
+            fullWidth
+            value={promoterFormData.promotion}
+            onChange={(e) => onChange('promotion', e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Promoter"
+            type="text"
+            name="promoter"
+            required
+            fullWidth
+            value={promoterFormData.promoter}
+            onChange={(e) => onChange('promoter', e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Next Event"
+            type="date"
+            name="nextEvent"
+            fullWidth
+            value={promoterFormData.nextEvent}
+            onChange={(e) => onChange('nextEvent', e.target.value)}
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
         </>
       )}
     </div>
