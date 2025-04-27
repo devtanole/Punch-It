@@ -103,7 +103,9 @@ function PostCard({ post }: PostProps) {
               )}
             </span>
             <div className="row">
-              <p>{post.username}</p>
+              <p>
+                <strong>{post.username}</strong>
+              </p>
             </div>
             <Link to={`details/${post.postId}`}>
               <FaPencilAlt />

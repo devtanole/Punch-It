@@ -105,12 +105,6 @@ export function RegistrationForm() {
                 preview={preview}
                 setPreview={setPreview}
               />
-              {/* <input
-                required
-                name="profilePicture"
-                type="text"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              /> */}
             </label>
             <label className="mb-1 block">
               Username

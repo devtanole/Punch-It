@@ -77,7 +77,9 @@ export function Comments({ postId }: CommentProps) {
               />
             )}
             <p>
-              {c.username}: {c.text}
+              <strong>
+                {c.username}: {c.text}
+              </strong>
             </p>
           </li>
         ))}
