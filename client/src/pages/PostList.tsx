@@ -4,6 +4,7 @@ import { FaPencilAlt } from 'react-icons/fa';
 import { Post, readPosts } from '../lib/data';
 import { useUser } from '../components/useUser';
 import { Comments } from './Comments';
+import { CircularProgress } from '@mui/material';
 
 export function PostFeed() {
   const [posts, setPosts] = useState<Post[]>();
@@ -26,8 +27,8 @@ export function PostFeed() {
     console.log(user);
     if (user) load();
   }, [user]);
-  if (!user) return <div>Login to continue</div>;
-  if (isLoading) return <div>Loading...</div>;
+  if (!user) return <div style={{ marginTop: '20px' }}>Login to continue</div>;
+  if (isLoading) return <CircularProgress />;
   if (error) {
     return (
       <div>

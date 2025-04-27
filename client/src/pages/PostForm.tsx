@@ -9,6 +9,7 @@ import {
   updatePost,
 } from '../lib/data';
 import { MediaUploads } from '../components/MediaUploads';
+import { CircularProgress } from '@mui/material';
 
 const MAX_MEDIA = 4;
 
@@ -87,7 +88,7 @@ export function PostForm() {
     }
   }
 
-  if (isLoading) return <div>Loading...</div>; //replace later with mui component
+  if (isLoading) return <CircularProgress />; //replace later with mui component
   if (error) {
     return (
       <div>
