@@ -237,6 +237,33 @@ app.get('/api/feed', async (req, res, next) => {
   }
 });
 
+app.get('/api/profile/:userId/posts', async (req, res, next) => {
+  try {
+    const { userId } = req.params; // Get userId from the route params
+
+    const sql = `
+      select p.*, u."username", u."profilePictureUrl"
+      from "posts" as p
+      join "users" as u using ("userId")
+      where p."userId" = $1
+      order by p."postId" desc;
+    `;
+
+    // Use parameterized query to avoid SQL injection
+    const result = await db.query(sql, [userId]);
+
+    // Return the posts if found
+    if (result.rows.length > 0) {
+      console.log('backend:', result.rows);
+      res.json(result.rows);
+    } else {
+      res.status(404).json({ message: 'No posts found for this user.' });
+    }
+  } catch (err) {
+    next(err); // Pass error to the next error-handling middleware
+  }
+});
+
 app.get('/api/profile/:userId', async (req, res, next) => {
   try {
     const { userId } = req.params;
