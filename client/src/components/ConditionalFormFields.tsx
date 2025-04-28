@@ -79,7 +79,7 @@ export function ConditionalFormFields({
             name="pullouts"
             required
             fullWidth
-            value={fighterFormData.pullouts || ''}
+            value={fighterFormData.pullouts}
             onChange={(e) => onChange('pullouts', e.target.value)}
             margin="normal"
           />
@@ -89,7 +89,7 @@ export function ConditionalFormFields({
             name="weightMisses"
             required
             fullWidth
-            value={fighterFormData.weightMisses || ''}
+            value={fighterFormData.weightMisses}
             onChange={(e) => onChange('weightMisses', e.target.value)}
             margin="normal"
           />
@@ -99,7 +99,7 @@ export function ConditionalFormFields({
             name="finishes"
             required
             fullWidth
-            value={fighterFormData.finishes || ''}
+            value={fighterFormData.finishes}
             onChange={(e) => onChange('finishes', e.target.value)}
             margin="normal"
           />

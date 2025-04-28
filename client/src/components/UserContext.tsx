@@ -8,13 +8,10 @@ export type User = {
   profilePictureUrl?: string;
   fullName: string;
   email: string;
+  bio?: string;
   location: string;
   userType: 'fighter' | 'promoter';
 };
-
-// export type AuthorInfo = {
-//   userId: number;
-// };
 
 export type FighterUser = User & {
   weight: number;

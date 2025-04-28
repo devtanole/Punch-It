@@ -1,3 +1,5 @@
+import type { FighterUser, PromoterUser } from '../components/UserContext';
+
 export type Post = {
   postId: number;
   userId: number;
@@ -7,6 +9,8 @@ export type Post = {
   username: string;
   profilePictureUrl: string;
 };
+
+type Profile = User | FighterUser | PromoterUser;
 
 export type NewPost = {
   textContent: string;
@@ -102,6 +106,21 @@ export async function updatePost(post: Post): Promise<Post> {
   const res = await fetch(`/api/posts/${post.postId}`, req);
   if (!res.ok) throw new Error(`fetch Error ${res.status}`);
   return (await res.json()) as Post;
+}
+
+export async function updateProfile(user: Profile): Promise<Profile> {
+  const token = readToken();
+  const req = {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(user),
+  };
+  const res = await fetch(`/api/profile/${user.userId}`, req);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  return (await res.json()) as Profile;
 }
 
 export async function addPost(post: NewPost): Promise<Post> {

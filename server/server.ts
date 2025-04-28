@@ -237,6 +237,92 @@ app.get('/api/feed', async (req, res, next) => {
   }
 });
 
+app.get('/api/profile/:userId', async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    if (userId === undefined) {
+      throw new ClientError(400, `userId required`);
+    }
+    const sql = `
+      select
+        u."userId",
+        u."username",
+        u."fullName",
+        u."bio",
+        u."profilePictureUrl",
+        u."location",
+        u."userType",
+        f."height",
+        f."weight",
+        f."record",
+        f."gymName",
+        f."pullouts",
+        f."weightMisses",
+        f."finishes",
+        p."promotion",
+        p."promoter",
+        p."nextEvent"
+      from "users" u
+      left join "fighter_profile" f ON u."userId" = f."userId"
+      left join "promoter_profile" p ON u."userId" = p."userId"
+      where u."userId" = $1;
+    `;
+    const params = [userId];
+    const result = await db.query(sql, params);
+    const profile = result.rows[0];
+
+    if (!profile) {
+      throw new ClientError(404, `user ${userId} not found`);
+    }
+    const fullProfile = { ...profile };
+    res.json(fullProfile);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// app.get('/api/profile/:userId', authMiddleware, async (req, res, next) => {
+//   try {
+//     const { userId } = req.params;
+//     if (userId === undefined) {
+//       throw new ClientError(400, `userId required`);
+//     }
+//     const sql = `
+//     select "userId", "username", "fullName", "bio", "profilePictureUrl", "location", "userType"
+//     from "users"
+//     where "userId" = $1;
+//     `;
+//     const params = [userId];
+//     const result = await db.query(sql, params);
+//     const profile = result.rows[0];
+//     if (!profile) {
+//       throw new ClientError(404, `user ${userId} not found`);
+//     }
+//     let additionalFields = {};
+//     if (profile.userType === 'fighter') {
+//       const fighterSql = `
+//         select "height", "weight", "record", "gymName", "pullouts", "weightMisses", "finishes"
+//         from "fighter_profile"
+//         where "userId" = $1;
+//       `;
+//       const fighterResult = await db.query(fighterSql, [userId]);
+//       additionalFields = fighterResult.rows[0] || {};
+//     } else if (profile.userType === 'promoter') {
+//       const promoterSql = `
+//         select "promotion", "promoter", "nextEvent"
+//         from "promoter_profile"
+//         where "userId" = $1;
+//       `;
+//       const promoterResult = await db.query(promoterSql, [userId]);
+//       additionalFields = promoterResult.rows[0] || {};
+//     }
+//     const fullProfile = { ...profile, ...additionalFields };
+//     res.json(fullProfile);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
 app.get('/api/posts/:postId', authMiddleware, async (req, res, next) => {
   try {
     const { postId } = req.params;
@@ -386,6 +472,30 @@ app.put('/api/posts/:postId', authMiddleware, async (req, res, next) => {
       throw new ClientError(404, `cannot find post of post Id ${postId}`);
     }
     res.json(updatedPost);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const { bio, location } = req.body;
+    const userSql = `
+    update "users"
+      set "updatedAt" = now(),
+        "bio" = $1,
+        "location" = $2
+      where "userId" =$3
+      returning *;
+    `;
+    const userParams = [bio, location, req.user?.userId];
+    const result = await db.query(userSql, userParams);
+    const updatedProfile = result.rows[0];
+    if (!updatedProfile) {
+      throw new ClientError(404, `cannot find user of user id ${userId}`);
+    }
+    res.json(updatedProfile);
   } catch (err) {
     next(err);
   }

@@ -105,7 +105,13 @@ function PostCard({ post }: PostProps) {
             </span>
             <div className="row">
               <p>
-                <strong>{post.username}</strong>
+                <strong>
+                  <Link
+                    to={`/profile/${post.userId}`}
+                    style={{ color: 'black', textDecoration: 'none' }}>
+                    {post.username}
+                  </Link>
+                </strong>
               </p>
             </div>
             <Link to={`details/${post.postId}`}>

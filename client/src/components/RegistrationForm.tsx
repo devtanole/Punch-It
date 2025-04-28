@@ -147,7 +147,7 @@ export function RegistrationForm() {
           margin="normal"
         />
 
-        <TextField required name="bio" label="Bio" fullWidth margin="normal" />
+        <TextField name="bio" label="Bio" fullWidth margin="normal" />
 
         <TextField
           required

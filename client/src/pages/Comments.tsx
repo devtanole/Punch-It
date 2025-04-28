@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Comment } from '../lib/data';
 import { readComments, addComment } from '../lib/data';
-// import { Post } from "../lib/data";
+import { Link } from 'react-router-dom';
 
 type CommentProps = {
   postId: number;
@@ -78,7 +78,11 @@ export function Comments({ postId }: CommentProps) {
             )}
             <p>
               <strong>
-                {c.username}: {c.text}
+                <Link
+                  to={`/profile/${c.userId}`}
+                  style={{ color: 'black', textDecoration: 'none' }}>
+                  {c.username}: {c.text}
+                </Link>
               </strong>
             </p>
           </li>
