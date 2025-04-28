@@ -59,7 +59,10 @@ export function ProfilePage() {
           />
         </Box>
         <Typography variant="h4" align="center" gutterBottom>
-          {profile?.fullName}'s Profile
+          {profile?.fullName}
+        </Typography>
+        <Typography variant="body1" align="center" gutterBottom>
+          @{profile?.username}
         </Typography>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -104,7 +107,7 @@ export function ProfilePage() {
           )}
           <Box mt={4}>
             <Typography variant="h5" gutterBottom>
-              {profile?.fullName}'s Posts
+              {profile?.fullName}'s Post History
             </Typography>
             {posts.length > 0 ? (
               posts.map((post) => (
