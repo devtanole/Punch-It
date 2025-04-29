@@ -9,7 +9,19 @@ import {
   updatePost,
 } from '../lib/data';
 import { MediaUploads } from '../components/MediaUploads';
-import { CircularProgress } from '@mui/material';
+import {
+  CircularProgress,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+} from '@mui/material';
 
 const MAX_MEDIA = 4;
 
@@ -88,112 +100,96 @@ export function PostForm() {
     }
   }
 
-  if (isLoading) return <CircularProgress />; //replace later with mui component
+  if (isLoading) return <CircularProgress />;
   if (error) {
     return (
-      <div>
+      <Alert severity="error">
         Error Loading Post with ID {postId}:{' '}
         {error instanceof Error ? error.message : 'Unknown Error'}
-      </div>
+      </Alert>
     );
   }
 
   return (
-    <div className="container">
-      <div className="row">
-        <div className="column-full d-flex justify-between">
-          <h1>New Post</h1>
-        </div>
-      </div>
+    <Box maxWidth={600} mx="auto" p={2}>
+      <Typography variant="h4" gutterBottom>
+        {isEditing ? 'Edit Post' : 'New Post'}
+      </Typography>
+
       <form onSubmit={handleSubmit}>
-        <div className="row margin-bottom-1">
-          <div className="column-full">
-            <label className="margin-bottom-1 d-block">Text Content</label>
-            <textarea
-              name="textContent"
-              value={textContent}
-              onChange={(e) => setTextContent(e.target.value)}
-              className="input-b-color text-padding input-b-radius purple-outline d-block width-100"
-              cols={25}
-              rows={10}
+        <Stack spacing={2}>
+          <TextField
+            name="textContent"
+            label="Text Content"
+            multiline
+            rows={6}
+            fullWidth
+            value={textContent}
+            onChange={(e) => setTextContent(e.target.value)}
+          />
+
+          {mediaUrls.length < MAX_MEDIA && (
+            <MediaUploads
+              onUpload={(url) => setMediaUrls((prev) => [...prev, url])}
+              disabled={mediaUrls.length >= MAX_MEDIA}
             />
-          </div>
-        </div>
-        <div className="row margin-bottom-1">
-          <div className="column-full">
-            {mediaUrls.length < MAX_MEDIA && (
-              <MediaUploads
-                onUpload={(url) => {
-                  setMediaUrls((prev) => [...prev, url]);
-                }}
-                disabled={mediaUrls.length >= MAX_MEDIA}
-              />
-            )}
-            {mediaUrls.length >= MAX_MEDIA && (
-              <p>You can only upload a maximum of 4 media files</p>
-            )}
-          </div>
-        </div>
-        {mediaUrls.length > 0 && (
-          <div className="row margin-bottom-1">
-            <div className="column-full">
+          )}
+          {mediaUrls.length >= MAX_MEDIA && (
+            <Typography color="text.secondary">
+              You can upload a maximum of 4 media files.
+            </Typography>
+          )}
+
+          {mediaUrls.length > 0 && (
+            <Stack spacing={2}>
               {mediaUrls.map((url, index) => (
-                <div key={index} style={{ marginBottom: '1rem' }}>
-                  {url.includes('.mp4') || url.includes('.webm') ? (
-                    <video width="250" controls src={url} />
+                <Box key={index}>
+                  {url.endsWith('.mp4') || url.endsWith('.webm') ? (
+                    <video width="100%" controls src={url} />
                   ) : (
-                    <img src={url} alt={`media-${index}`} width="250" />
+                    <img src={url} alt={`media-${index}`} width="100%" />
                   )}
-                  <br />
-                  <button
-                    type="button"
+                  <Button
                     onClick={() =>
                       setMediaUrls((prev) => prev.filter((_, i) => i !== index))
-                    }>
+                    }
+                    color="error">
                     Remove
-                  </button>
-                </div>
+                  </Button>
+                </Box>
               ))}
-            </div>
-          </div>
-        )}
-        <div className="row">
-          <div className="column-full d-flex justify-between">
+            </Stack>
+          )}
+
+          <Stack direction="row" justifyContent="space-between">
             {isEditing && (
-              <button
-                className="delete-entry-button"
-                type="button"
+              <Button
+                variant="outlined"
+                color="error"
                 onClick={() => setIsDeleting(true)}>
                 Delete Post
-              </button>
+              </Button>
             )}
-            <button type="submit">POST</button>
-          </div>
-        </div>
+            <Button type="submit" variant="contained">
+              {isEditing ? 'Update Post' : 'Post'}
+            </Button>
+          </Stack>
+        </Stack>
       </form>
-      {isDeleting && (
-        <div
-          id="modalContainer"
-          className="modal-container d-flex justify-center align-center">
-          <div className="modal row">
-            <div className="column-full d-flex justify-center">
-              <p>Are you sure you want to delete this post?</p>
-            </div>
-            <div className="column-full d-flex justify-between">
-              <button
-                className="modal-button"
-                onClick={() => setIsDeleting(false)}>
-                Cancel
-              </button>
-              <button
-                className="modal-button red-background white-text"
-                onClick={handleDelete}>
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+
+      {/* Deletion Confirmation Dialog */}
+      <Dialog open={isDeleting} onClose={() => setIsDeleting(false)}>
+        <DialogTitle>Delete Post</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this post?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleting(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
