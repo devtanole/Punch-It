@@ -141,19 +141,37 @@ export function PostForm() {
           )}
 
           {mediaUrls.length > 0 && (
-            <Stack spacing={2}>
+            <Stack direction="row" flexWrap="wrap" gap={2}>
               {mediaUrls.map((url, index) => (
-                <Box key={index}>
+                <Box key={index} sx={{ position: 'relative', width: 180 }}>
                   {url.endsWith('.mp4') || url.endsWith('.webm') ? (
-                    <video width="100%" controls src={url} />
+                    <Box
+                      component="video"
+                      src={url}
+                      controls
+                      sx={{ width: '100%', borderRadius: 1 }}
+                    />
                   ) : (
-                    <img src={url} alt={`media-${index}`} width="100%" />
+                    <Box
+                      component="img"
+                      src={url}
+                      alt={`media-${index}`}
+                      sx={{
+                        width: '100%',
+                        height: 140,
+                        objectFit: 'cover',
+                        borderRadius: 1,
+                        boxShadow: 1,
+                      }}
+                    />
                   )}
                   <Button
                     onClick={() =>
                       setMediaUrls((prev) => prev.filter((_, i) => i !== index))
                     }
-                    color="error">
+                    size="small"
+                    color="error"
+                    sx={{ mt: 1 }}>
                     Remove
                   </Button>
                 </Box>
