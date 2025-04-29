@@ -506,8 +506,29 @@ app.put('/api/posts/:postId', authMiddleware, async (req, res, next) => {
 
 app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
   try {
-    const userId = req.params.userId;
-    const { bio, location } = req.body;
+    const { userId } = req.params;
+    const {
+      bio,
+      location,
+      email,
+      fullName,
+      profilePictureUrl,
+      weight,
+      height,
+      record,
+      gymName,
+      pullouts,
+      weightMisses,
+      finishes,
+      promotion,
+      promoter,
+      nextEvent,
+    } = req.body;
+    const typeSql = `
+    select "userType" from "users"
+    where "userId" = $1;
+    `;
+    const typeResult = await db.query(typeSql, [userId]);
     const userSql = `
     update "users"
       set "updatedAt" = now(),
@@ -548,6 +569,32 @@ app.delete('/api/posts/:postId', authMiddleware, async (req, res, next) => {
     next(err);
   }
 });
+
+app.delete(
+  '/api/posts/:postId/comments/:commentId',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { commentId, postId } = req.params;
+      if (!Number.isInteger(+commentId)) {
+        throw new ClientError(400, `Non-integer postId: ${commentId}`);
+      }
+      const sql = `
+      delete from "comments"
+      where "commentId" = $1 and "postId" = $2 and "userId" = $3
+      returning *;
+      `;
+      const params = [commentId, postId, req.user?.userId];
+      const result = await db.query(sql, params);
+      const [comment] = result.rows;
+      if (!comment)
+        throw new ClientError(404, `comment ${commentId} not found`);
+      res.status(204).json(comment);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // Create paths for static directories
 const reactStaticDir = new URL('../client/dist', import.meta.url).pathname;

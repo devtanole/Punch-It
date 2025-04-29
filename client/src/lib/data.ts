@@ -169,3 +169,18 @@ export async function removePost(postId: number): Promise<void> {
   const res = await fetch(`/api/posts/${postId}`, req);
   if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
 }
+
+export async function removeComment(
+  commentId: number,
+  postId: number
+): Promise<void> {
+  const token = readToken();
+  const req = {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const res = await fetch(`api/posts/${postId}/comments/${commentId}`, req);
+  if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
+}
