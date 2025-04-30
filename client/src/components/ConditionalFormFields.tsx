@@ -1,6 +1,10 @@
 import { TextField } from '@mui/material';
 
 export type FighterProps = {
+  fullName?: string;
+  location?: string;
+  userId?: number;
+  bio?: string;
   weight: number;
   height: string;
   record: string;
@@ -11,6 +15,10 @@ export type FighterProps = {
 };
 
 export type PromoterProps = {
+  fullName?: string;
+  userId?: number;
+  location?: string;
+  bio?: string;
   promotion: string;
   promoter: string;
   nextEvent?: string;

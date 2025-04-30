@@ -1,4 +1,8 @@
 import type { FighterUser, PromoterUser } from '../components/UserContext';
+import {
+  FighterProps,
+  PromoterProps,
+} from '../components/ConditionalFormFields';
 
 export type Post = {
   postId: number;
@@ -108,7 +112,9 @@ export async function updatePost(post: Post): Promise<Post> {
   return (await res.json()) as Post;
 }
 
-export async function updateProfile(user: Profile): Promise<Profile> {
+export async function updateProfile(
+  user: FighterProps | PromoterProps
+): Promise<Profile> {
   const token = readToken();
   const req = {
     method: 'PUT',

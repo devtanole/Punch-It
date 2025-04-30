@@ -1,5 +1,14 @@
 import { useEffect, ReactNode, createContext, useState } from 'react';
 import { readUser, readToken, removeAuth, saveAuth } from '../lib/data';
+import { Profile } from '../pages/UserProfile';
+
+export function isFighterUser(profile: Profile): profile is FighterUser {
+  return profile.userType === 'fighter' && 'weight' in profile;
+}
+
+export function isPromoterUser(profile: Profile): profile is PromoterUser {
+  return profile.userType === 'promoter' && 'promotion' in profile;
+}
 
 export type User = {
   userId: number;
@@ -24,8 +33,8 @@ export type FighterUser = User & {
 };
 
 export type PromoterUser = User & {
-  promotion: number;
-  promoter: number;
+  promotion: string;
+  promoter: string;
   nextEvent?: string;
 };
 

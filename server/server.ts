@@ -230,7 +230,6 @@ app.get('/api/feed', async (req, res, next) => {
     order by p."postId" desc;
     `;
     const result = await db.query(sql);
-    console.log('backend:', result.rows);
     res.json(result.rows);
   } catch (err) {
     next(err);
@@ -239,7 +238,7 @@ app.get('/api/feed', async (req, res, next) => {
 
 app.get('/api/profile/:userId/posts', async (req, res, next) => {
   try {
-    const { userId } = req.params; // Get userId from the route params
+    const { userId } = req.params;
 
     const sql = `
       select p.*, u."username", u."profilePictureUrl"
@@ -249,18 +248,15 @@ app.get('/api/profile/:userId/posts', async (req, res, next) => {
       order by p."postId" desc;
     `;
 
-    // Use parameterized query to avoid SQL injection
     const result = await db.query(sql, [userId]);
 
-    // Return the posts if found
     if (result.rows.length > 0) {
-      console.log('backend:', result.rows);
       res.json(result.rows);
     } else {
       res.status(404).json({ message: 'No posts found for this user.' });
     }
   } catch (err) {
-    next(err); // Pass error to the next error-handling middleware
+    next(err);
   }
 });
 
@@ -492,7 +488,6 @@ app.put('/api/posts/:postId', authMiddleware, async (req, res, next) => {
       returning *;
     `;
     const params = [textContent, mediaUrls, postId, req.user?.userId];
-    console.log(' req.user?.userId:', req.user?.userId);
     const result = await db.query(sql, params);
     const updatedPost = result.rows[0];
     if (!updatedPost) {
@@ -508,11 +503,9 @@ app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
   try {
     const { userId } = req.params;
     const {
+      fullName,
       bio,
       location,
-      email,
-      fullName,
-      profilePictureUrl,
       weight,
       height,
       record,
@@ -529,17 +522,59 @@ app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
     where "userId" = $1;
     `;
     const typeResult = await db.query(typeSql, [userId]);
-    const userSql = `
-    update "users"
-      set "updatedAt" = now(),
-        "bio" = $1,
-        "location" = $2
-      where "userId" =$3
+    const type = typeResult.rows[0]?.userType;
+    console.log('type:', type);
+    const FighterSql = `
+    update "fighter_profile"
+      set
+        "weight" = $1,
+        "height" = $2,
+        "record" = $3,
+        "gymName" = $4,
+        "pullouts" = $5,
+        "weightMisses" = $6,
+        "finishes" = $7
+      where "userId" =$8
       returning *;
     `;
-    const userParams = [bio, location, req.user?.userId];
-    const result = await db.query(userSql, userParams);
-    const updatedProfile = result.rows[0];
+    const PromoSql = `
+      update "promoter_profile"
+        set
+        "promotion" = $1,
+        "promoter" = $2,
+        "nextEvent" = $3
+      where "userId" = $4
+      returning *;
+    `;
+    const userSql = `
+      update "users"
+        set "updatedAt" = now(),
+        "bio" = $1,
+        "location" = $2,
+        "fullName" = $3
+      where "userId" = $4
+      returning *;
+    `;
+    const fighterParams = [
+      weight,
+      height,
+      record,
+      gymName,
+      pullouts,
+      weightMisses,
+      finishes,
+      req.user?.userId,
+    ];
+    const promoParams = [promotion, promoter, nextEvent, req.user?.userId];
+    const userParams = [bio, location, fullName, req.user?.userId];
+    await db.query(userSql, userParams);
+    let result;
+    if (type === 'fighter') {
+      result = await db.query(FighterSql, fighterParams);
+    } else if (type === 'promoter') {
+      result = await db.query(PromoSql, promoParams);
+    }
+    const updatedProfile = result?.rows[0];
     if (!updatedProfile) {
       throw new ClientError(404, `cannot find user of user id ${userId}`);
     }
