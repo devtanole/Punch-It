@@ -112,27 +112,40 @@ function PostCard({ post }: PostProps) {
         </Typography>
 
         {post.mediaUrls.length > 0 && (
-          <Box sx={{ mt: 2 }}>
+          <Box
+            sx={{
+              mt: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}>
             {post.mediaUrls.map((url, index) => (
               <Box key={index} sx={{ mb: 2 }}>
                 {url.match(/\.(mp4|mov|webm)$/i) ? (
-                  <video
-                    key={index}
+                  <Box
+                    component="video"
                     src={url}
                     controls
-                    style={{ width: '100%', borderRadius: '8px' }}
+                    sx={{
+                      width: '100%',
+                      maxWidth: 400,
+                      maxHeight: 300,
+                      borderRadius: 2,
+                      display: 'block',
+                    }}
                   />
                 ) : (
-                  <img
-                    key={index}
+                  <Box
+                    component="img"
                     src={url}
                     alt={`media-${index}`}
-                    style={{
+                    sx={{
                       width: '100%',
-                      maxWidth: '500px',
-                      borderRadius: '8px',
+                      maxWidth: 400,
+                      maxHeight: 300,
+                      objectFit: 'cover',
+                      borderRadius: 2,
                       display: 'block',
-                      margin: '0 auto',
                     }}
                   />
                 )}
