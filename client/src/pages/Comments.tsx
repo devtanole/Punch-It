@@ -98,6 +98,10 @@ export function Comments({ postId }: CommentProps) {
                 </Link>
               </strong>
               <span>{c.text}</span>
+              <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                {new Date(c.createdAt).toLocaleString()}
+              </span>
+
               {c.userId === userId && (
                 <IconButton
                   onClick={() => toggleDeleteConfirmation(c.commentId)}
