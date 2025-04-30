@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPencilAlt } from 'react-icons/fa';
+import AddSharpIcon from '@mui/icons-material/AddSharp';
+import EditSharpIcon from '@mui/icons-material/EditSharp';
 import { Post, readPosts } from '../lib/data';
 import { useUser } from '../components/useUser';
 import { Comments } from './Comments';
@@ -59,7 +60,7 @@ export function PostFeed() {
         <Typography variant="h4">Feed</Typography>
         <Link to="/details/new">
           <Typography variant="body1" sx={{ color: 'primary.main' }}>
-            Post
+            <AddSharpIcon />
           </Typography>
         </Link>
       </Stack>
@@ -102,7 +103,7 @@ function PostCard({ post }: PostProps) {
             component={Link}
             to={`details/${post.postId}`}
             color="primary">
-            <FaPencilAlt />
+            <EditSharpIcon />
           </IconButton>
         </Stack>
 

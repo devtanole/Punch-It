@@ -78,57 +78,44 @@ export function Comments({ postId }: CommentProps) {
     <div className="container">
       <ul>
         {comments.map((c) => (
-          <li key={c.commentId}>
-            {c.profilePictureUrl ? (
+          <li key={c.commentId} style={{ marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <img
-                src={c.profilePictureUrl}
-                alt={`${c.username}'s profile`}
-                className="profile-picture"
+                src={c.profilePictureUrl || '/images/AvatarDefault.webp'}
+                alt={`${c.username}'s avatar`}
                 style={{
-                  width: 22,
-                  height: 22,
+                  width: 28,
+                  height: 28,
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  marginBottom: 12,
                 }}
               />
-            ) : (
-              <img
-                className="default-avatar"
-                src="/images/AvatarDefault.webp"
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  marginBottom: 12,
-                }}
-              />
-            )}
-            <p>
               <strong>
                 <Link
                   to={`/profile/${c.userId}`}
                   style={{ color: 'black', textDecoration: 'none' }}>
-                  {c.username}: {c.text}
+                  {c.username}
                 </Link>
               </strong>
-            </p>
-            {/* find better icon later */}
-            {c.userId === userId && (
-              <IconButton
-                onClick={() => toggleDeleteConfirmation(c.commentId)}
-                style={{ color: 'grey' }}
-                size="small">
-                <DeleteSharpIcon />
-              </IconButton>
-            )}
+              <span>{c.text}</span>
+              {c.userId === userId && (
+                <IconButton
+                  onClick={() => toggleDeleteConfirmation(c.commentId)}
+                  style={{ color: 'grey', marginLeft: 'auto' }}
+                  size="small">
+                  <DeleteSharpIcon fontSize="small" />
+                </IconButton>
+              )}
+            </div>
+
             {isDeleting[c.commentId] && (
-              <div>
-                <p>Are you sure you want to delete this comment?</p>
+              <div style={{ marginLeft: 36 }}>
+                <p style={{ marginBottom: 4 }}>
+                  Are you sure you want to delete this comment?
+                </p>
                 <button
                   onClick={() => handleDelete(c.commentId, c.userId)}
-                  style={{ color: 'red', cursor: 'pointer' }}>
+                  style={{ color: 'red', cursor: 'pointer', marginRight: 8 }}>
                   Confirm
                 </button>
                 <button
