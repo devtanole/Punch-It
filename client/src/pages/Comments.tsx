@@ -4,7 +4,7 @@ import { readComments, addComment, removeComment } from '../lib/data';
 import { Link } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import { useUser } from '../components/useUser';
-import CancelPresentationSharpIcon from '@mui/icons-material/CancelPresentationSharp';
+import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
 
 type CommentProps = {
   postId: number;
@@ -118,9 +118,9 @@ export function Comments({ postId }: CommentProps) {
             {c.userId === userId && (
               <IconButton
                 onClick={() => toggleDeleteConfirmation(c.commentId)}
-                style={{ color: 'red' }}
+                style={{ color: 'grey' }}
                 size="small">
-                <CancelPresentationSharpIcon />
+                <DeleteSharpIcon />
               </IconButton>
             )}
             {isDeleting[c.commentId] && (
