@@ -5,6 +5,7 @@ import EditSharpIcon from '@mui/icons-material/EditSharp';
 import { Post, readPosts } from '../lib/data';
 import { useUser } from '../components/useUser';
 import { Comments } from './Comments';
+import { ProfileCard } from './ProfileCard';
 import {
   CircularProgress,
   Card,
@@ -51,24 +52,40 @@ export function PostFeed() {
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: 800, margin: '0 auto', pt: 4 }}>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ mb: 2 }}>
-        <Typography variant="h4">Feed</Typography>
-        <Link to="/details/new">
-          <Typography variant="body1" sx={{ color: 'primary.main' }}>
-            <AddSharpIcon />
-          </Typography>
-        </Link>
-      </Stack>
+    <Stack
+      direction="row"
+      spacing={4}
+      sx={{
+        width: '100%',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        pt: 4,
+        px: 2,
+        alignItems: 'flex-start',
+      }}>
+      <Box sx={{ flex: 1 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ mb: 2 }}>
+          <Typography variant="h4">Feed</Typography>
+          <Link to="/details/new">
+            <Typography variant="body1" sx={{ color: 'primary.main' }}>
+              <AddSharpIcon />
+            </Typography>
+          </Link>
+        </Stack>
 
-      {posts?.map((post) => (
-        <PostCard key={post.postId} post={post} />
-      ))}
-    </Box>
+        {posts?.map((post) => (
+          <PostCard key={post.postId} post={post} />
+        ))}
+      </Box>
+
+      <Box sx={{ width: 300 }}>
+        <ProfileCard />
+      </Box>
+    </Stack>
   );
 }
 
