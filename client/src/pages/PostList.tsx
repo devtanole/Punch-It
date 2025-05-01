@@ -28,7 +28,7 @@ export function PostFeed() {
     async function load() {
       try {
         const posts = await readPosts();
-        console.log('is it here:', posts);
+
         setPosts(posts);
       } catch (err) {
         setError(err);
@@ -36,7 +36,7 @@ export function PostFeed() {
         setIsLoading(false);
       }
     }
-    console.log(user);
+
     if (user) load();
   }, [user]);
   if (!user) return <div style={{ marginTop: '20px' }}>Login to continue</div>;
