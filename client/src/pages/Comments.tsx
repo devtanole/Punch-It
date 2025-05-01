@@ -43,9 +43,9 @@ export function Comments({ postId }: CommentProps) {
     e.preventDefault();
     if (!newComment.trim()) return;
     try {
-      const comment = await addComment(postId, newComment);
-      setComments([...comments, comment]);
-      setNewComment('');
+      await addComment(postId, newComment);
+      const updatedComments = await readComments(postId);
+      setComments(updatedComments);
     } catch (err) {
       console.error('Failed to add comment:', err);
     }
