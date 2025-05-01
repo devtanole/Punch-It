@@ -72,6 +72,7 @@ export function UserProvider({ children }: Props) {
   }, []);
 
   function handleSignIn(user: User, token: string) {
+    console.log('can you see this:', user);
     setUser(user);
     setToken(token);
     saveAuth(user, token);
