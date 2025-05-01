@@ -5,7 +5,6 @@ import EditSharpIcon from '@mui/icons-material/EditSharp';
 import { Post, readPosts } from '../lib/data';
 import { useUser } from '../components/useUser';
 import { Comments } from './Comments';
-import { ProfileCard } from './ProfileCard';
 import {
   CircularProgress,
   Card,
@@ -80,10 +79,6 @@ export function PostFeed() {
         {posts?.map((post) => (
           <PostCard key={post.postId} post={post} />
         ))}
-      </Box>
-
-      <Box sx={{ width: 300 }}>
-        <ProfileCard />
       </Box>
     </Stack>
   );
