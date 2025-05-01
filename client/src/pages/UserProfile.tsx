@@ -158,7 +158,9 @@ export function ProfilePage() {
                   <Box display="flex" alignItems="center" mb={2}>
                     <Avatar
                       alt={post.username}
-                      src={post.profilePictureUrl || '/default-avatar.png'}
+                      src={
+                        post.profilePictureUrl || '/images/Avatar-Default.webp'
+                      }
                       sx={{ width: 40, height: 40, mr: 2 }}
                     />
                     <Typography variant="body1" fontWeight="bold">
@@ -171,18 +173,35 @@ export function ProfilePage() {
                   {post.mediaUrls.length > 0 && (
                     <Box mt={2}>
                       {post.mediaUrls.map((url, index) => (
-                        <Box key={index} mb={2}>
-                          <img
-                            src={url}
-                            alt={`media-${index}`}
-                            style={{
-                              width: '100%',
-                              maxWidth: '500px',
-                              borderRadius: '8px',
-                              display: 'block',
-                              margin: '0 auto',
-                            }}
-                          />
+                        <Box key={index} sx={{ mb: 2 }}>
+                          {url.match(/\.(mp4|mov|webm)$/i) ? (
+                            <Box
+                              component="video"
+                              src={url}
+                              controls
+                              sx={{
+                                width: '100%',
+                                maxWidth: 400,
+                                maxHeight: 300,
+                                borderRadius: 2,
+                                display: 'block',
+                              }}
+                            />
+                          ) : (
+                            <Box
+                              component="img"
+                              src={url}
+                              alt={`media-${index}`}
+                              sx={{
+                                width: '100%',
+                                maxWidth: 400,
+                                maxHeight: 300,
+                                objectFit: 'cover',
+                                borderRadius: 2,
+                                display: 'block',
+                              }}
+                            />
+                          )}
                         </Box>
                       ))}
                     </Box>
