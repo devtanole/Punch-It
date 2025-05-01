@@ -19,6 +19,7 @@ import {
 import { useParams } from 'react-router-dom';
 import type { Post } from '../lib/data';
 import { UpdateForm } from './UpdateProfPage';
+import { useUser } from '../components/useUser';
 
 // import { updateProfile } from '../lib/data';
 
@@ -31,6 +32,7 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchProfileAndPosts = async () => {
@@ -65,13 +67,16 @@ export function ProfilePage() {
             sx={{ width: 100, height: 100 }}
           />
         </Box>
-        <Stack direction="row" justifyContent="space-between">
-          <Button
-            variant="contained"
-            onClick={() => setIsEditing((prevState) => !prevState)}>
-            {isEditing ? 'Cancel' : 'Edit Profile'}
-          </Button>
-        </Stack>
+        {user?.userId === Number(userId) && (
+          <Stack direction="row" justifyContent="space-between">
+            <Button
+              variant="contained"
+              onClick={() => setIsEditing((prevState) => !prevState)}>
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </Button>
+          </Stack>
+        )}
+
         {isEditing && profile ? (
           isFighterUser(profile) ? (
             <UpdateForm
