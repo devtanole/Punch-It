@@ -7,6 +7,7 @@ import { PostForm } from './pages/PostForm';
 import { PostFeed } from './pages/PostList';
 import { NotFound } from './NotFound';
 import { ProfilePage } from './pages/UserProfile';
+import { UserSearchBar } from './pages/Search';
 
 // className = 'block border border-gray-600 rounded p-2 h-8 w-full mb-2';
 
@@ -20,7 +21,7 @@ export default function App() {
           <Route index element={<PostFeed />} />
           <Route path="details/:postId" element={<PostForm />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />
-
+          <Route path="/search" element={<UserSearchBar />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
