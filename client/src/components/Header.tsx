@@ -94,6 +94,13 @@ export function Header() {
                   }}>
                   Home
                 </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    navigate('/details/new');
+                    setLogoMenuAnchorEl(null);
+                  }}>
+                  Post
+                </MenuItem>
               </Menu>
             )}
             <Box
