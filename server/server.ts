@@ -202,6 +202,127 @@ app.post('/api/auth/sign-in', async (req, res, next) => {
   }
 });
 
+app.get('/api/fights', authMiddleware, async (req, res, next) => {
+  try {
+    const sql = `
+      SELECT
+        f."fightId",
+        f."date",
+        f."outcome",
+        f."decision",
+        f."promotion",
+        u."username" AS "fighterUsername"
+      FROM
+        "fight_history" f
+      JOIN
+        "fighter_profile" fp ON f."fighterId" = fp."userId"
+      JOIN
+        "users" u ON fp."userId" = u."userId"
+      WHERE
+        f."fighterId" = $1
+      ORDER BY
+        f."date" DESC;
+    `;
+    const params = [req.user?.userId];
+    const result = await db.query(sql, params);
+    const history = result.rows;
+
+    if (!history.length) {
+      throw new ClientError(404, 'No fight history found');
+    }
+
+    res.json(history);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// app.get('/api/fights', authMiddleware, async (req, res, next) => {
+//   try {
+//     const sql = `
+//       select *
+//       from "fight_history"
+//       where "fighterId" = $1
+//       order by "date" DESC;
+//     `;
+//     const params = [req.user?.userId];
+//     const result = await db.query(sql, params);
+//     const history = result.rows;
+
+//     if (!history.length) {
+//       throw new ClientError(404, 'No fight history found');
+//     }
+
+//     res.json(history);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+app.post('/api/fights', authMiddleware, async (req, res, next) => {
+  try {
+    const { date, outcome, decision, promotion } = req.body;
+    const fighterId = req.user?.userId;
+
+    if (!date || !outcome || !decision || !promotion) {
+      throw new ClientError(400, 'All fields are required');
+    }
+
+    const sql = `
+      insert into "fight_history" ("fighterId", "date", "outcome", "decision", "promotion")
+      values ($1, $2, $3, $4, $5)
+      returning *;
+    `;
+    const params = [fighterId, date, outcome, decision, promotion];
+    const result = await db.query(sql, params);
+    const fightRecord = result.rows[0];
+
+    res.status(201).json(fightRecord);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/fights/:fightId', authMiddleware, async (req, res, next) => {
+  try {
+    const fightId = Number(req.params.fightId);
+    if (!Number.isInteger(fightId) || fightId < 1) {
+      throw new ClientError(400, 'fightId must be a positive integer');
+    }
+
+    const { date, outcome, decision, promotion } = req.body;
+    const fighterId = req.user?.userId;
+
+    if (!date || !outcome || !decision || !promotion) {
+      throw new ClientError(400, 'All fields are required');
+    }
+
+    const sql = `
+      update "fight_history"
+      set "date" = $1,
+          "outcome" = $2,
+          "decision" = $3,
+          "promotion" = $4
+      where "fightId" = $5 and "fighterId" = $6
+      returning *;
+    `;
+    const params = [date, outcome, decision, promotion, fightId, fighterId];
+    const result = await db.query(sql, params);
+    const updatedFight = result.rows[0];
+
+    if (!updatedFight) {
+      throw new ClientError(
+        404,
+        `No fight history found for fightId ${fightId}`
+      );
+    }
+
+    res.json(updatedFight);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('/api/posts', authMiddleware, async (req, res, next) => {
   try {
     const sql = `
@@ -337,47 +458,32 @@ app.get('/api/profile/:userId', async (req, res, next) => {
   }
 });
 
-// app.get('/api/profile/:userId', authMiddleware, async (req, res, next) => {
-//   try {
-//     const { userId } = req.params;
-//     if (userId === undefined) {
-//       throw new ClientError(400, `userId required`);
-//     }
-//     const sql = `
-//     select "userId", "username", "fullName", "bio", "profilePictureUrl", "location", "userType"
-//     from "users"
-//     where "userId" = $1;
-//     `;
-//     const params = [userId];
-//     const result = await db.query(sql, params);
-//     const profile = result.rows[0];
-//     if (!profile) {
-//       throw new ClientError(404, `user ${userId} not found`);
-//     }
-//     let additionalFields = {};
-//     if (profile.userType === 'fighter') {
-//       const fighterSql = `
-//         select "height", "weight", "record", "gymName", "pullouts", "weightMisses", "finishes"
-//         from "fighter_profile"
-//         where "userId" = $1;
-//       `;
-//       const fighterResult = await db.query(fighterSql, [userId]);
-//       additionalFields = fighterResult.rows[0] || {};
-//     } else if (profile.userType === 'promoter') {
-//       const promoterSql = `
-//         select "promotion", "promoter", "nextEvent"
-//         from "promoter_profile"
-//         where "userId" = $1;
-//       `;
-//       const promoterResult = await db.query(promoterSql, [userId]);
-//       additionalFields = promoterResult.rows[0] || {};
-//     }
-//     const fullProfile = { ...profile, ...additionalFields };
-//     res.json(fullProfile);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
+app.get('/api/fights/:fightId', authMiddleware, async (req, res, next) => {
+  try {
+    const { fightId } = req.params;
+    const userId = req.user?.userId;
+
+    if (!fightId) {
+      throw new ClientError(400, 'fightId required');
+    }
+
+    const sql = `
+      select * from "fightHistory"
+      where "fightId" = $1 and "userId" = $2;
+    `;
+    const params = [fightId, userId];
+    const result = await db.query(sql, params);
+    const fight = result.rows[0];
+
+    if (!fight) {
+      throw new ClientError(404, `Fight with ID ${fightId} not found`);
+    }
+
+    res.json(fight);
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.get('/api/posts/:postId', authMiddleware, async (req, res, next) => {
   try {
@@ -619,6 +725,32 @@ app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
       throw new ClientError(404, `cannot find user of user id ${userId}`);
     }
     res.json(updatedProfile);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/api/fights/:fightId', authMiddleware, async (req, res, next) => {
+  try {
+    const { fightId } = req.params;
+    if (!Number.isInteger(+fightId)) {
+      throw new ClientError(400, `Non-integer fightId: ${fightId}`);
+    }
+
+    const deleteSql = `
+      delete from "fight_history"
+      where "fightId" = $1 and "fighterId" = $2
+      returning *;
+    `;
+    const params = [fightId, req.user?.userId];
+    const result = await db.query(deleteSql, params);
+    const [fight] = result.rows;
+
+    if (!fight) {
+      throw new ClientError(404, `fightId ${fightId} not found or not yours`);
+    }
+
+    res.status(204).json(fight);
   } catch (err) {
     next(err);
   }

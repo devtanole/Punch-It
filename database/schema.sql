@@ -56,6 +56,18 @@ CREATE TABLE "comments" (
   "createdAt" timestamptz not null default now()
 );
 
+CREATE TABLE "fight_history" (
+  "fightId" serial PRIMARY KEY,
+  "fighterId" int NOT NULL,
+  "date" date NOT NULL,
+  "outcome" text NOT NULL,
+  "decision" text NOT NULL,
+  "promotion" text NOT NULL,
+
+  FOREIGN KEY ("fighterId") REFERENCES "fighter_profile" ("userId") ON DELETE CASCADE
+);
+
+
 ALTER TABLE "fighter_profile" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
 
 ALTER TABLE "promoter_profile" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");

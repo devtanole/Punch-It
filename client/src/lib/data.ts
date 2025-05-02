@@ -31,6 +31,23 @@ export type Comment = {
   createdAt: string;
 };
 
+export type FightHistory = {
+  fightId: number;
+  fighterId: number;
+  date: string;
+  outcome: string;
+  decision: string;
+  promotion: string;
+  username: string;
+};
+
+export type NewFightEntry = {
+  date: string;
+  outcome: string;
+  decision: string;
+  promotion: string;
+};
+
 import { User } from '../components/UserContext';
 
 const authKey = 'um.auth';
@@ -97,6 +114,32 @@ export async function readPost(postId: number): Promise<Post | undefined> {
   return (await res.json()) as Post;
 }
 
+export async function readFight(
+  fightId: number
+): Promise<FightHistory | undefined> {
+  const token = readToken();
+  const req = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const res = await fetch(`/api/fights/${fightId}`, req);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  return (await res.json()) as FightHistory;
+}
+
+export async function readFights(): Promise<FightHistory[]> {
+  const token = readToken();
+  const req = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const res = await fetch('/api/fights', req);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  return (await res.json()) as FightHistory[];
+}
+
 export async function updatePost(post: Post): Promise<Post> {
   const token = readToken();
   const req = {
@@ -110,6 +153,25 @@ export async function updatePost(post: Post): Promise<Post> {
   const res = await fetch(`/api/posts/${post.postId}`, req);
   if (!res.ok) throw new Error(`fetch Error ${res.status}`);
   return (await res.json()) as Post;
+}
+
+export async function updateFight(
+  fightId: number,
+  fight: NewFightEntry
+): Promise<FightHistory> {
+  const token = readToken();
+  const req = {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(fight),
+  };
+  const res = await fetch(`/api/fights/${fightId}`, req);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+
+  return (await res.json()) as FightHistory;
 }
 
 export async function updateProfile(
@@ -146,6 +208,23 @@ export async function addPost(post: NewPost): Promise<Post> {
   return data as Post;
 }
 
+export async function addFight(fight: NewFightEntry): Promise<FightHistory> {
+  const token = readToken();
+  const req = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(fight),
+  };
+  const res = await fetch('/api/fights', req);
+  const data = await res.json();
+  console.log('server response:', data);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  return data as FightHistory;
+}
+
 export async function addComment(
   postId: number,
   text: string
@@ -173,6 +252,18 @@ export async function removePost(postId: number): Promise<void> {
     },
   };
   const res = await fetch(`/api/posts/${postId}`, req);
+  if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
+}
+
+export async function removeFight(fightId: number): Promise<void> {
+  const token = readToken();
+  const req = {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const res = await fetch(`/api/fights/${fightId}`, req);
   if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
 }
 
