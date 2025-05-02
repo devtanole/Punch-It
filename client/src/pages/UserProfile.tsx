@@ -10,6 +10,11 @@ import {
   Button,
   Tabs,
   Tab,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import {
   User,
@@ -19,10 +24,12 @@ import {
   isPromoterUser,
 } from '../components/UserContext';
 import { useParams } from 'react-router-dom';
-import type { Post, FightHistory } from '../lib/data';
 import { UpdateForm } from './UpdateProfPage';
 import { useUser } from '../components/useUser';
-
+import DeleteIcon from '@mui/icons-material/Delete';
+import { removeFight } from '../lib/data';
+import { Post } from '../lib/data';
+import { FightHistory } from '../lib/data';
 export type Profile = User | FighterUser | PromoterUser;
 
 export function ProfilePage() {
@@ -35,6 +42,9 @@ export function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const { user } = useUser();
   const [tabIndex, setTabIndex] = useState(0);
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedFightId, setSelectedFightId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchProfileAndData = async () => {
@@ -67,6 +77,31 @@ export function ProfilePage() {
   if (error) return <Typography color="error">{error}</Typography>;
 
   const isFighter = profile?.userType === 'fighter';
+
+  const handleDeleteFight = async () => {
+    if (selectedFightId === null) return;
+
+    try {
+      await removeFight(selectedFightId);
+
+      setFights((prevFights) =>
+        prevFights.filter((fight) => fight.fightId !== selectedFightId)
+      );
+      setOpenDialog(false);
+    } catch (err) {
+      console.error('Error deleting fight:', err);
+      setError('Error deleting fight');
+    }
+  };
+
+  const handleDialogOpen = (fightId: number) => {
+    setSelectedFightId(fightId);
+    setOpenDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+  };
 
   return (
     <Container>
@@ -264,6 +299,12 @@ export function ProfilePage() {
                       <Typography variant="body1">
                         Promotion: {fight.promotion}
                       </Typography>
+
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDialogOpen(fight.fightId)}>
+                        <DeleteIcon />
+                      </IconButton>
                     </Paper>
                   </Box>
                 ))
@@ -274,6 +315,21 @@ export function ProfilePage() {
           )}
         </Box>
       </Paper>
+
+      <Dialog open={openDialog} onClose={handleDialogClose}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this fight?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteFight} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

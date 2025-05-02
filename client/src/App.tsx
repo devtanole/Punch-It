@@ -22,6 +22,7 @@ export default function App() {
           <Route index element={<PostFeed />} />
           <Route path="details/:postId" element={<PostForm />} />
           <Route path="/fights/:fightId" element={<FightHistoryForm />} />
+
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/search" element={<UserSearchBar />} />
           <Route path="*" element={<NotFound />} />
