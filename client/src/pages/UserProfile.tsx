@@ -39,6 +39,7 @@ export function ProfilePage() {
       try {
         const profileResponse = await fetch(`/api/profile/${userId}`);
         const profileData: Profile = await profileResponse.json();
+        console.log(profileData);
         setProfile(profileData);
         const postsResponse = await fetch(`/api/profile/${userId}/posts`);
         const postsData = await postsResponse.json();
@@ -84,6 +85,7 @@ export function ProfilePage() {
               fighterProf={profile}
               userId={profile.userId}
               setIsEditing={setIsEditing}
+              setProfile={setProfile}
             />
           ) : isPromoterUser(profile) ? (
             <UpdateForm
@@ -91,6 +93,7 @@ export function ProfilePage() {
               promoProf={profile}
               userId={profile.userId}
               setIsEditing={setIsEditing}
+              setProfile={setProfile}
             />
           ) : null
         ) : (

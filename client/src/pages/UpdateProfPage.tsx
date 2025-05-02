@@ -8,6 +8,7 @@ import {
 // import { UserAvatar } from '../components/UserAvatar';
 import { TextField, Button } from '@mui/material';
 import { updateProfile } from '../lib/data';
+import { Profile } from './UserProfile';
 
 // const defaultAvi = '/images/AvatarDefault';
 
@@ -18,6 +19,7 @@ type updateProps =
       fighterProf: FighterProps;
       promoProf?: never;
       setIsEditing: (boolean: boolean) => void;
+      setProfile: (u: Profile) => void;
     }
   | {
       userType: 'promoter';
@@ -25,6 +27,7 @@ type updateProps =
       fighterProf?: never;
       promoProf: PromoterProps;
       setIsEditing: (boolean: boolean) => void;
+      setProfile: (u: Profile) => void;
     };
 
 export function UpdateForm({
@@ -32,6 +35,7 @@ export function UpdateForm({
   setIsEditing,
   fighterProf,
   promoProf,
+  setProfile,
 }: updateProps) {
   // console.log(setIsEditing);
   const [isLoading, setIsLoading] = useState(false);
@@ -124,9 +128,9 @@ export function UpdateForm({
         userType,
       };
 
-      await updateProfile(fullUserData);
+      const updatedData = await updateProfile(fullUserData);
+      setProfile(updatedData);
       setIsEditing(false);
-      console.log('hey');
     } catch (err) {
       alert(`Error updating user: ${err}`);
     } finally {

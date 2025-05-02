@@ -587,7 +587,7 @@ app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
         "location" = $2,
         "fullName" = $3
       where "userId" = $4
-      returning *;
+      returning "bio", "location", "fullName", "profilePictureUrl", "username", "userType";
     `;
     const fighterParams = [
       weight,
@@ -601,7 +601,8 @@ app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
     ];
     const promoParams = [promotion, promoter, nextEvent, req.user?.userId];
     const userParams = [bio, location, fullName, req.user?.userId];
-    await db.query(userSql, userParams);
+    const userResult = await db.query(userSql, userParams);
+    const updatedUser = userResult.rows[0];
     let result;
     if (type === 'fighter') {
       result = await db.query(FighterSql, fighterParams);
@@ -609,6 +610,12 @@ app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
       result = await db.query(PromoSql, promoParams);
     }
     const updatedProfile = result?.rows[0];
+    updatedProfile.bio = updatedUser.bio;
+    updatedProfile.location = updatedUser.location;
+    updatedProfile.fullName = updatedUser.fullName;
+    updatedProfile.profilePictureUrl = updatedUser.profilePictureUrl;
+    updatedProfile.username = updatedUser.username;
+    updatedProfile.userType = updatedUser.userType;
     if (!updatedProfile) {
       throw new ClientError(404, `cannot find user of user id ${userId}`);
     }
