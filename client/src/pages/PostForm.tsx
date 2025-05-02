@@ -195,7 +195,6 @@ export function PostForm() {
         </Stack>
       </form>
 
-      {/* Deletion Confirmation Dialog */}
       <Dialog open={isDeleting} onClose={() => setIsDeleting(false)}>
         <DialogTitle>Delete Post</DialogTitle>
         <DialogContent>

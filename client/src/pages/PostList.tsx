@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import AddSharpIcon from '@mui/icons-material/AddSharp';
+import SportsMmaIcon from '@mui/icons-material/SportsMma';
 import EditSharpIcon from '@mui/icons-material/EditSharp';
 import { Post, readPosts } from '../lib/data';
 import { useUser } from '../components/useUser';
@@ -16,12 +16,15 @@ import {
   Box,
   Divider,
   Stack,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 
 export function PostFeed() {
   const [posts, setPosts] = useState<Post[]>();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<unknown>();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { user } = useUser();
 
   useEffect(() => {
@@ -39,6 +42,14 @@ export function PostFeed() {
 
     if (user) load();
   }, [user]);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   if (!user) return <div style={{ marginTop: '20px' }}>Login to continue</div>;
   if (isLoading) return <CircularProgress />;
   if (error) {
@@ -69,11 +80,27 @@ export function PostFeed() {
           alignItems="center"
           sx={{ mb: 2 }}>
           <Typography variant="h4">Feed</Typography>
-          <Link to="/details/new">
-            <Typography variant="body1" sx={{ color: 'primary.main' }}>
-              <AddSharpIcon />
-            </Typography>
-          </Link>
+          <IconButton onClick={handleMenuClick} sx={{ color: 'primary.main' }}>
+            <SportsMmaIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}>
+            <MenuItem
+              component={Link}
+              to="/details/new"
+              onClick={handleMenuClose}>
+              Add Post
+            </MenuItem>
+
+            <MenuItem
+              component={Link}
+              to="/fights/new"
+              onClick={handleMenuClose}>
+              Add Fight
+            </MenuItem>
+          </Menu>
         </Stack>
 
         {posts?.map((post) => (

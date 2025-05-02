@@ -8,6 +8,13 @@ import {
   Avatar,
   Stack,
   Button,
+  Tabs,
+  Tab,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import {
   User,
@@ -17,46 +24,84 @@ import {
   isPromoterUser,
 } from '../components/UserContext';
 import { useParams } from 'react-router-dom';
-import type { Post } from '../lib/data';
 import { UpdateForm } from './UpdateProfPage';
 import { useUser } from '../components/useUser';
-
-// import { updateProfile } from '../lib/data';
-
+import DeleteIcon from '@mui/icons-material/Delete';
+import { removeFight } from '../lib/data';
+import { Post } from '../lib/data';
+import { FightHistory } from '../lib/data';
 export type Profile = User | FighterUser | PromoterUser;
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [fights, setFights] = useState<FightHistory[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
   const { user } = useUser();
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedFightId, setSelectedFightId] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchProfileAndPosts = async () => {
+    const fetchProfileAndData = async () => {
       try {
         const profileResponse = await fetch(`/api/profile/${userId}`);
         const profileData: Profile = await profileResponse.json();
-        console.log(profileData);
         setProfile(profileData);
+
         const postsResponse = await fetch(`/api/profile/${userId}/posts`);
         const postsData = await postsResponse.json();
         setPosts(postsData);
+
+        if (profileData.userType === 'fighter') {
+          const fightsResponse = await fetch(`/api/profile/${userId}/fights`);
+          const fightsData = await fightsResponse.json();
+          setFights(fightsData);
+        }
       } catch (err) {
-        setError('Error fetching profile or posts');
+        setError('Error fetching profile or data');
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfileAndPosts();
+    fetchProfileAndData();
   }, [userId]);
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
+
+  const isFighter = profile?.userType === 'fighter';
+
+  const handleDeleteFight = async () => {
+    if (selectedFightId === null) return;
+
+    try {
+      await removeFight(selectedFightId);
+
+      setFights((prevFights) =>
+        prevFights.filter((fight) => fight.fightId !== selectedFightId)
+      );
+      setOpenDialog(false);
+    } catch (err) {
+      console.error('Error deleting fight:', err);
+      setError('Error deleting fight');
+    }
+  };
+
+  const handleDialogOpen = (fightId: number) => {
+    setSelectedFightId(fightId);
+    setOpenDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+  };
 
   return (
     <Container>
@@ -68,11 +113,12 @@ export function ProfilePage() {
             sx={{ width: 100, height: 100 }}
           />
         </Box>
+
         {user?.userId === Number(userId) && (
-          <Stack direction="row" justifyContent="space-between">
+          <Stack direction="row" justifyContent="space-between" mb={2}>
             <Button
               variant="contained"
-              onClick={() => setIsEditing((prevState) => !prevState)}>
+              onClick={() => setIsEditing((prev) => !prev)}>
               {isEditing ? 'Cancel' : 'Edit Profile'}
             </Button>
           </Stack>
@@ -111,7 +157,7 @@ export function ProfilePage() {
               </Typography>
               <Typography variant="body2">Bio: {profile?.bio || ''}</Typography>
 
-              {profile?.userType === 'fighter' && (
+              {isFighter && (
                 <Box>
                   <Typography variant="h6">
                     Weight: {(profile as FighterUser).weight} lbs
@@ -150,77 +196,140 @@ export function ProfilePage() {
             </Box>
           </>
         )}
+
         <Box mt={4}>
-          <Typography variant="h5" gutterBottom>
-            {profile?.fullName}'s Post History
-          </Typography>
-          {posts.length > 0 ? (
-            posts.map((post) => (
-              <Box key={post.postId} mb={4}>
-                <Paper sx={{ p: 2 }}>
-                  <Box display="flex" alignItems="center" mb={2}>
-                    <Avatar
-                      alt={post.username}
-                      src={
-                        post.profilePictureUrl || '/images/Avatar-Default.webp'
-                      }
-                      sx={{ width: 40, height: 40, mr: 2 }}
-                    />
-                    <Typography variant="body1" fontWeight="bold">
-                      {post.username}
-                    </Typography>
-                  </Box>
+          <Tabs
+            value={tabIndex}
+            onChange={(_, newValue) => setTabIndex(newValue)}>
+            <Tab label="Posts" />
+            {isFighter && <Tab label="Fight History" />}
+          </Tabs>
 
-                  <Typography variant="body1">{post.textContent}</Typography>
-
-                  {post.mediaUrls.length > 0 && (
-                    <Box mt={2}>
-                      {post.mediaUrls.map((url, index) => (
-                        <Box key={index} sx={{ mb: 2 }}>
-                          {url.match(/\.(mp4|mov|webm)$/i) ? (
-                            <Box
-                              component="video"
-                              src={url}
-                              controls
-                              sx={{
-                                width: '100%',
-                                maxWidth: 400,
-                                maxHeight: 300,
-                                borderRadius: 2,
-                                display: 'block',
-                              }}
-                            />
-                          ) : (
-                            <Box
-                              component="img"
-                              src={url}
-                              alt={`media-${index}`}
-                              sx={{
-                                width: '100%',
-                                maxWidth: 400,
-                                maxHeight: 300,
-                                objectFit: 'cover',
-                                borderRadius: 2,
-                                display: 'block',
-                              }}
-                            />
-                          )}
+          {tabIndex === 0 && (
+            <Box mt={2}>
+              <Typography variant="h5" gutterBottom>
+                {profile?.fullName}'s Post History
+              </Typography>
+              {posts.length > 0 ? (
+                posts.map((post) => (
+                  <Box key={post.postId} mb={4}>
+                    <Paper sx={{ p: 2 }}>
+                      <Box display="flex" alignItems="center" mb={2}>
+                        <Avatar
+                          alt={post.username}
+                          src={
+                            post.profilePictureUrl ||
+                            '/images/Avatar-Default.webp'
+                          }
+                          sx={{ width: 40, height: 40, mr: 2 }}
+                        />
+                        <Typography variant="body1" fontWeight="bold">
+                          {post.username}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body1">
+                        {post.textContent}
+                      </Typography>
+                      {post.mediaUrls.length > 0 && (
+                        <Box mt={2}>
+                          {post.mediaUrls.map((url, index) => (
+                            <Box key={index} sx={{ mb: 2 }}>
+                              {url.match(/\.(mp4|mov|webm)$/i) ? (
+                                <Box
+                                  component="video"
+                                  src={url}
+                                  controls
+                                  sx={{
+                                    width: '100%',
+                                    maxWidth: 400,
+                                    maxHeight: 300,
+                                    borderRadius: 2,
+                                    display: 'block',
+                                  }}
+                                />
+                              ) : (
+                                <Box
+                                  component="img"
+                                  src={url}
+                                  alt={`media-${index}`}
+                                  sx={{
+                                    width: '100%',
+                                    maxWidth: 400,
+                                    maxHeight: 300,
+                                    objectFit: 'cover',
+                                    borderRadius: 2,
+                                    display: 'block',
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          ))}
                         </Box>
-                      ))}
-                    </Box>
-                  )}
-                  <Typography variant="body2" color="textSecondary" mt={2}>
-                    Posted on {new Date(post.createdAt).toLocaleString()}
-                  </Typography>
-                </Paper>
-              </Box>
-            ))
-          ) : (
-            <Typography>No posts available</Typography>
+                      )}
+                      <Typography variant="body2" color="textSecondary" mt={2}>
+                        Posted on {new Date(post.createdAt).toLocaleString()}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                ))
+              ) : (
+                <Typography>No posts available</Typography>
+              )}
+            </Box>
           )}
-          {/* </Box> */}
+
+          {tabIndex === 1 && isFighter && (
+            <Box mt={2}>
+              <Typography variant="h5" gutterBottom>
+                {profile?.fullName}'s Fight History
+              </Typography>
+              {fights.length > 0 ? (
+                fights.map((fight) => (
+                  <Box key={fight.fightId} mb={2}>
+                    <Paper sx={{ p: 2 }}>
+                      <Typography variant="body1">
+                        Date: {new Date(fight.date).toLocaleDateString()}
+                      </Typography>
+                      <Typography variant="body1">
+                        Outcome: {fight.outcome}
+                      </Typography>
+                      <Typography variant="body1">
+                        Decision: {fight.decision}
+                      </Typography>
+                      <Typography variant="body1">
+                        Promotion: {fight.promotion}
+                      </Typography>
+
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDialogOpen(fight.fightId)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Paper>
+                  </Box>
+                ))
+              ) : (
+                <Typography>No fight history available.</Typography>
+              )}
+            </Box>
+          )}
         </Box>
       </Paper>
+
+      <Dialog open={openDialog} onClose={handleDialogClose}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this fight?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteFight} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

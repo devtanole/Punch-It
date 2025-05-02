@@ -5,12 +5,10 @@ import {
   type FighterProps,
   type PromoterProps,
 } from '../components/ConditionalFormFields';
-// import { UserAvatar } from '../components/UserAvatar';
+
 import { TextField, Button } from '@mui/material';
 import { updateProfile } from '../lib/data';
 import { Profile } from './UserProfile';
-
-// const defaultAvi = '/images/AvatarDefault';
 
 type updateProps =
   | {
@@ -37,7 +35,6 @@ export function UpdateForm({
   promoProf,
   setProfile,
 }: updateProps) {
-  // console.log(setIsEditing);
   const [isLoading, setIsLoading] = useState(false);
   const [userFields, setUserFields] = useState({
     fullName: '',
@@ -62,12 +59,6 @@ export function UpdateForm({
       setPromoterFormData(promoProf);
     }
   }, [userType, fighterProf, promoProf]);
-
-  // const [userFormData, setUserFormData] = useState({
-  //   fullName: '',
-  //   location: '',
-  //   bio: '',
-  // });
 
   const [fighterFormData, setFighterFormData] = useState<FighterProps>({
     fullName: '',
@@ -141,14 +132,6 @@ export function UpdateForm({
   return (
     <div className="p-3 container">
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          {/* <UserAvatar
-            preview={preview}
-            setPreview={setPreview}
-            onUpload={(url) => setPreview(url)}
-          /> */}
-        </div>
-
         <TextField
           required
           name="fullName"
