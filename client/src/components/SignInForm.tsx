@@ -1,6 +1,14 @@
 import { type FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, useUser } from './useUser';
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  CircularProgress,
+} from '@mui/material';
 
 type AuthData = {
   user: User;
@@ -40,40 +48,43 @@ export function SignInForm() {
   }
 
   return (
-    <div className="p-3 container">
-      <h2 className="text-xl font-bold">Sign In</h2>
+    <Container maxWidth="xs">
+      <Typography variant="h4" component="h1" gutterBottom>
+        Sign In
+      </Typography>
       <form onSubmit={handleSubmit}>
-        <div className="flex flex-wrap mb-1">
-          <div>
-            <label className="mb-1 block">
-              Username
-              <input
-                required
-                name="username"
-                type="text"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
-            </label>
-            <label className="mb-1 block">
-              Password
-              <input
-                required
-                name="password"
-                type="password"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
-            </label>
-          </div>
-        </div>
-        <button
-          disabled={isLoading}
-          className="mb-2 align-middle text-center border rounded py-1 px-3 bg-blue-600 text-white">
-          Sign In
-        </button>
+        <Box display="flex" flexDirection="column" gap={2}>
+          <TextField
+            name="username"
+            label="Username"
+            variant="outlined"
+            required
+            fullWidth
+          />
+          <TextField
+            name="password"
+            label="Password"
+            type="password"
+            variant="outlined"
+            required
+            fullWidth
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={isLoading}>
+            {isLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              'Sign In'
+            )}
+          </Button>
+        </Box>
       </form>
-      <Link to="/auth/sign-up" className="ml-2">
-        Sign Up
-      </Link>
-    </div>
+      <Box mt={2}>
+        <Link to="/auth/sign-up">Don't have an account? Sign Up</Link>
+      </Box>
+    </Container>
   );
 }

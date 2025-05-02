@@ -55,6 +55,8 @@
     "@cloudinary/url-gen": "^1.21.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
     "axios": "^1.8.4",

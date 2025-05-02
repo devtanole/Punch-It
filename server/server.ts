@@ -230,12 +230,154 @@ app.get('/api/feed', async (req, res, next) => {
     order by p."postId" desc;
     `;
     const result = await db.query(sql);
-    console.log('backend:', result.rows);
     res.json(result.rows);
   } catch (err) {
     next(err);
   }
 });
+
+app.get('/api/profile/:userId/posts', async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const sql = `
+      select p.*, u."username", u."profilePictureUrl"
+      from "posts" as p
+      join "users" as u using ("userId")
+      where p."userId" = $1
+      order by p."postId" desc;
+    `;
+
+    const result = await db.query(sql, [userId]);
+
+    if (result.rows.length > 0) {
+      res.json(result.rows);
+    } else {
+      res.status(404).json({ message: 'No posts found for this user.' });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/search', async (req, res, next) => {
+  try {
+    const { username } = req.query;
+    if (!username) {
+      throw new ClientError(400, 'Username is required for search');
+    }
+
+    const sql = `
+      SELECT
+        u."userId",
+        u."username",
+        u."fullName",
+        u."profilePictureUrl",
+        u."bio",
+        u."location",
+        u."userType"
+      FROM "users" u
+      WHERE u."username" ILIKE $1  -- Case-insensitive search
+    `;
+
+    const params = [`%${username}%`];
+    const result = await db.query(sql, params);
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ message: 'No users found' });
+    } else {
+      res.json(result.rows);
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/profile/:userId', async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    if (userId === undefined) {
+      throw new ClientError(400, `userId required`);
+    }
+    const sql = `
+      select
+        u."userId",
+        u."username",
+        u."fullName",
+        u."bio",
+        u."profilePictureUrl",
+        u."location",
+        u."userType",
+        f."height",
+        f."weight",
+        f."record",
+        f."gymName",
+        f."pullouts",
+        f."weightMisses",
+        f."finishes",
+        p."promotion",
+        p."promoter",
+        p."nextEvent"
+      from "users" u
+      left join "fighter_profile" f ON u."userId" = f."userId"
+      left join "promoter_profile" p ON u."userId" = p."userId"
+      where u."userId" = $1;
+    `;
+    const params = [userId];
+    const result = await db.query(sql, params);
+    const profile = result.rows[0];
+
+    if (!profile) {
+      throw new ClientError(404, `user ${userId} not found`);
+    }
+    const fullProfile = { ...profile };
+    res.json(fullProfile);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// app.get('/api/profile/:userId', authMiddleware, async (req, res, next) => {
+//   try {
+//     const { userId } = req.params;
+//     if (userId === undefined) {
+//       throw new ClientError(400, `userId required`);
+//     }
+//     const sql = `
+//     select "userId", "username", "fullName", "bio", "profilePictureUrl", "location", "userType"
+//     from "users"
+//     where "userId" = $1;
+//     `;
+//     const params = [userId];
+//     const result = await db.query(sql, params);
+//     const profile = result.rows[0];
+//     if (!profile) {
+//       throw new ClientError(404, `user ${userId} not found`);
+//     }
+//     let additionalFields = {};
+//     if (profile.userType === 'fighter') {
+//       const fighterSql = `
+//         select "height", "weight", "record", "gymName", "pullouts", "weightMisses", "finishes"
+//         from "fighter_profile"
+//         where "userId" = $1;
+//       `;
+//       const fighterResult = await db.query(fighterSql, [userId]);
+//       additionalFields = fighterResult.rows[0] || {};
+//     } else if (profile.userType === 'promoter') {
+//       const promoterSql = `
+//         select "promotion", "promoter", "nextEvent"
+//         from "promoter_profile"
+//         where "userId" = $1;
+//       `;
+//       const promoterResult = await db.query(promoterSql, [userId]);
+//       additionalFields = promoterResult.rows[0] || {};
+//     }
+//     const fullProfile = { ...profile, ...additionalFields };
+//     res.json(fullProfile);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 
 app.get('/api/posts/:postId', authMiddleware, async (req, res, next) => {
   try {
@@ -379,13 +521,104 @@ app.put('/api/posts/:postId', authMiddleware, async (req, res, next) => {
       returning *;
     `;
     const params = [textContent, mediaUrls, postId, req.user?.userId];
-    console.log(' req.user?.userId:', req.user?.userId);
     const result = await db.query(sql, params);
     const updatedPost = result.rows[0];
     if (!updatedPost) {
       throw new ClientError(404, `cannot find post of post Id ${postId}`);
     }
     res.json(updatedPost);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/profile/:userId', authMiddleware, async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const {
+      fullName,
+      bio,
+      location,
+      weight,
+      height,
+      record,
+      gymName,
+      pullouts,
+      weightMisses,
+      finishes,
+      promotion,
+      promoter,
+      nextEvent,
+    } = req.body;
+    const typeSql = `
+    select "userType" from "users"
+    where "userId" = $1;
+    `;
+    const typeResult = await db.query(typeSql, [userId]);
+    const type = typeResult.rows[0]?.userType;
+    console.log('type:', type);
+    const FighterSql = `
+    update "fighter_profile"
+      set
+        "weight" = $1,
+        "height" = $2,
+        "record" = $3,
+        "gymName" = $4,
+        "pullouts" = $5,
+        "weightMisses" = $6,
+        "finishes" = $7
+      where "userId" =$8
+      returning *;
+    `;
+    const PromoSql = `
+      update "promoter_profile"
+        set
+        "promotion" = $1,
+        "promoter" = $2,
+        "nextEvent" = $3
+      where "userId" = $4
+      returning *;
+    `;
+    const userSql = `
+      update "users"
+        set "updatedAt" = now(),
+        "bio" = $1,
+        "location" = $2,
+        "fullName" = $3
+      where "userId" = $4
+      returning "bio", "location", "fullName", "profilePictureUrl", "username", "userType";
+    `;
+    const fighterParams = [
+      weight,
+      height,
+      record,
+      gymName,
+      pullouts,
+      weightMisses,
+      finishes,
+      req.user?.userId,
+    ];
+    const promoParams = [promotion, promoter, nextEvent, req.user?.userId];
+    const userParams = [bio, location, fullName, req.user?.userId];
+    const userResult = await db.query(userSql, userParams);
+    const updatedUser = userResult.rows[0];
+    let result;
+    if (type === 'fighter') {
+      result = await db.query(FighterSql, fighterParams);
+    } else if (type === 'promoter') {
+      result = await db.query(PromoSql, promoParams);
+    }
+    const updatedProfile = result?.rows[0];
+    updatedProfile.bio = updatedUser.bio;
+    updatedProfile.location = updatedUser.location;
+    updatedProfile.fullName = updatedUser.fullName;
+    updatedProfile.profilePictureUrl = updatedUser.profilePictureUrl;
+    updatedProfile.username = updatedUser.username;
+    updatedProfile.userType = updatedUser.userType;
+    if (!updatedProfile) {
+      throw new ClientError(404, `cannot find user of user id ${userId}`);
+    }
+    res.json(updatedProfile);
   } catch (err) {
     next(err);
   }
@@ -411,6 +644,32 @@ app.delete('/api/posts/:postId', authMiddleware, async (req, res, next) => {
     next(err);
   }
 });
+
+app.delete(
+  '/api/posts/:postId/comments/:commentId',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { commentId, postId } = req.params;
+      if (!Number.isInteger(+commentId)) {
+        throw new ClientError(400, `Non-integer postId: ${commentId}`);
+      }
+      const sql = `
+      delete from "comments"
+      where "commentId" = $1 and "postId" = $2 and "userId" = $3
+      returning *;
+      `;
+      const params = [commentId, postId, req.user?.userId];
+      const result = await db.query(sql, params);
+      const [comment] = result.rows;
+      if (!comment)
+        throw new ClientError(404, `comment ${commentId} not found`);
+      res.status(204).json(comment);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // Create paths for static directories
 const reactStaticDir = new URL('../client/dist', import.meta.url).pathname;

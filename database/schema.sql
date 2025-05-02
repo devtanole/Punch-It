@@ -16,7 +16,8 @@ CREATE TABLE "users" (
   "hashedPassword" text NOT NULL,
   "userType" varchar NOT NULL,
   "createdAt" timestamptz NOT NULL DEFAULT 'now()',
-  "location" text NOT NULL
+  "location" text NOT NULL,
+  "updatedAt" timestamptz NOT NULL DEFAULT 'now()'
 );
 
 CREATE TABLE "fighter_profile" (

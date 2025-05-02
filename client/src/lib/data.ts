@@ -1,3 +1,9 @@
+import type { FighterUser, PromoterUser } from '../components/UserContext';
+import {
+  FighterProps,
+  PromoterProps,
+} from '../components/ConditionalFormFields';
+
 export type Post = {
   postId: number;
   userId: number;
@@ -7,6 +13,8 @@ export type Post = {
   username: string;
   profilePictureUrl: string;
 };
+
+type Profile = User | FighterUser | PromoterUser;
 
 export type NewPost = {
   textContent: string;
@@ -104,6 +112,23 @@ export async function updatePost(post: Post): Promise<Post> {
   return (await res.json()) as Post;
 }
 
+export async function updateProfile(
+  user: FighterProps | PromoterProps
+): Promise<Profile> {
+  const token = readToken();
+  const req = {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(user),
+  };
+  const res = await fetch(`/api/profile/${user.userId}`, req);
+  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  return (await res.json()) as Profile;
+}
+
 export async function addPost(post: NewPost): Promise<Post> {
   const token = readToken();
   const req = {
@@ -148,5 +173,20 @@ export async function removePost(postId: number): Promise<void> {
     },
   };
   const res = await fetch(`/api/posts/${postId}`, req);
+  if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
+}
+
+export async function removeComment(
+  commentId: number,
+  postId: number
+): Promise<void> {
+  const token = readToken();
+  const req = {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const res = await fetch(`api/posts/${postId}/comments/${commentId}`, req);
   if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
 }

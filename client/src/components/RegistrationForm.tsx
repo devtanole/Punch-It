@@ -8,13 +8,22 @@ import {
   type PromoterProps,
 } from './ConditionalFormFields';
 import { UserAvatar } from './UserAvatar';
+import {
+  TextField,
+  MenuItem,
+  Button,
+  InputLabel,
+  FormControl,
+  Select,
+  SelectChangeEvent,
+} from '@mui/material';
 
 // const defaultAvi = '/images/AvatarDefault';
 
 export function RegistrationForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<'fighter' | 'promoter'>('fighter');
-  const [preview, setPreview] = useState<string>('/images/AvatarDefault');
+  const [preview, setPreview] = useState<string>('/images/AvatarDefault.webp');
   const navigate = useNavigate();
 
   const [fighterFormData, setFighterFormData] = useState<FighterProps>({
@@ -53,7 +62,7 @@ export function RegistrationForm() {
     }
   };
 
-  const handleUserTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleUserTypeChange = (e: SelectChangeEvent) => {
     setUserType(e.target.value as 'fighter' | 'promoter');
   };
 
@@ -96,102 +105,90 @@ export function RegistrationForm() {
   return (
     <div className="p-3 container">
       <form onSubmit={handleSubmit}>
-        <div className="flex flex-wrap mb-1">
-          <div>
-            <label className="mb-1 block">
-              Profile Picture
-              <UserAvatar
-                onUpload={(url) => setPreview(url)}
-                preview={preview}
-                setPreview={setPreview}
-              />
-              {/* <input
-                required
-                name="profilePicture"
-                type="text"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              /> */}
-            </label>
-            <label className="mb-1 block">
-              Username
-              <input
-                required
-                name="username"
-                type="text"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
-            </label>
-            <label className="mb-1 block">
-              Password
-              <input
-                required
-                name="password"
-                type="password"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
-            </label>
-            <label className="mb-1 block">
-              Full Name
-              <input
-                required
-                name="fullName"
-                type="text"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
-            </label>
-            <label className="mb-1 block">
-              Email
-              <input
-                required
-                name="email"
-                type="email"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
-            </label>
-            <label className="mb-1 block">
-              Bio
-              <input
-                required
-                name="bio"
-                type="text"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
-            </label>
-            <label className="mb-1 block">
-              Location
-              <input
-                required
-                name="location"
-                type="text"
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2"
-              />
-            </label>
-            <label className="mb-1 block">
-              User Type:
-              <select
-                value={userType}
-                onChange={handleUserTypeChange}
-                className="block border border-gray-600 rounded p-2 h-8 w-full mb-2">
-                <option value="fighter">Fighter</option>
-                <option value="promoter">Promoter</option>
-              </select>
-            </label>
-          </div>
+        <div className="mb-3">
+          <UserAvatar
+            preview={preview}
+            setPreview={setPreview}
+            onUpload={(url) => setPreview(url)}
+          />
         </div>
+
+        <TextField
+          required
+          name="username"
+          label="Username"
+          fullWidth
+          margin="normal"
+        />
+
+        <TextField
+          required
+          name="password"
+          label="Password"
+          type="password"
+          fullWidth
+          margin="normal"
+        />
+
+        <TextField
+          required
+          name="fullName"
+          label="Full Name"
+          fullWidth
+          margin="normal"
+        />
+
+        <TextField
+          required
+          name="email"
+          label="Email"
+          type="email"
+          fullWidth
+          margin="normal"
+        />
+
+        <TextField name="bio" label="Bio" fullWidth margin="normal" />
+
+        <TextField
+          required
+          name="location"
+          label="Location"
+          fullWidth
+          margin="normal"
+        />
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>User Type</InputLabel>
+          <Select
+            name="userType"
+            value={userType}
+            label="User Type"
+            onChange={handleUserTypeChange}>
+            <MenuItem value="fighter">Fighter</MenuItem>
+            <MenuItem value="promoter">Promoter</MenuItem>
+          </Select>
+        </FormControl>
+
         <ConditionalFormFields
           userType={userType}
           fighterFormData={fighterFormData}
           promoterFormData={promoterFormData}
           onChange={handleChange}
         />
-        <button
+
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
           disabled={isLoading}
-          className="mb-2 align-middle text-center border rounded py-1 px-3 bg-blue-600 text-white">
+          sx={{ mt: 2 }}>
           Sign Up
-        </button>
+        </Button>
       </form>
-      <Link to="/auth/sign-in" className="ml-2">
-        Sign In
+
+      <Link to="/auth/sign-in" style={{ display: 'block', marginTop: '1rem' }}>
+        Already have an account? Sign In
       </Link>
     </div>
   );
