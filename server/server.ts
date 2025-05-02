@@ -357,6 +357,34 @@ app.get('/api/feed', async (req, res, next) => {
   }
 });
 
+app.get('/api/profile/:userId/fights', async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const sql = `
+      select f."fightId", f."date", f."outcome", f."decision", f."promotion", u."username", u."profilePictureUrl"
+      from "fight_history" as f
+      join "users" AS u ON u."userId" = f."fighterId"
+
+      where f."fighterId" = $1
+      order by f."date" DESC;
+    `;
+
+    const result = await db.query(sql, [userId]);
+
+    if (result.rows.length > 0) {
+      res.json(result.rows);
+    } else {
+      res
+        .status(404)
+        .json({ message: 'No fight history found for this user.' });
+    }
+  } catch (err) {
+    console.error('Error fetching fight history:', err);
+    next(err);
+  }
+});
+
 app.get('/api/profile/:userId/posts', async (req, res, next) => {
   try {
     const { userId } = req.params;
