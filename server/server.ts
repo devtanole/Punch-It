@@ -260,10 +260,9 @@ app.get('/api/profile/:userId/posts', async (req, res, next) => {
   }
 });
 
-// Server-side search endpoint to search for users by username
 app.get('/api/search', async (req, res, next) => {
   try {
-    const { username } = req.query; // Extract username from the query string
+    const { username } = req.query;
     if (!username) {
       throw new ClientError(400, 'Username is required for search');
     }
@@ -281,13 +280,13 @@ app.get('/api/search', async (req, res, next) => {
       WHERE u."username" ILIKE $1  -- Case-insensitive search
     `;
 
-    const params = [`%${username}%`]; // The % signs enable partial matching
+    const params = [`%${username}%`];
     const result = await db.query(sql, params);
 
     if (result.rows.length === 0) {
       res.status(404).json({ message: 'No users found' });
     } else {
-      res.json(result.rows); // Return the list of matching users
+      res.json(result.rows);
     }
   } catch (err) {
     next(err);

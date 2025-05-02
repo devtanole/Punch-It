@@ -4,7 +4,7 @@ import { User } from '../components/UserContext';
 
 export function UserSearchBar() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<User[]>([]); // Make sure to type this as an array of `User`
+  const [results, setResults] = useState<User[]>([]);
   const [error, setError] = useState('');
 
   const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,7 +21,7 @@ export function UserSearchBar() {
       if (!response.ok) {
         throw new Error('Search failed');
       }
-      const users: User[] = await response.json(); // Explicitly type this as `User[]`
+      const users: User[] = await response.json();
       setResults(users);
     } catch (err) {
       setError(error);
@@ -40,11 +40,7 @@ export function UserSearchBar() {
       <ul>
         {results.map((user) => (
           <li key={user.userId}>
-            <Link to={`/profile/${user.userId}`}>
-              {' '}
-              {/* Make sure you're using user.userId */}
-              {user.username}
-            </Link>
+            <Link to={`/profile/${user.userId}`}> {user.username}</Link>
           </li>
         ))}
       </ul>
