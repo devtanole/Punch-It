@@ -15,7 +15,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import {
   User,
   FighterUser,
@@ -23,13 +25,12 @@ import {
   isFighterUser,
   isPromoterUser,
 } from '../components/UserContext';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { UpdateForm } from './UpdateProfPage';
 import { useUser } from '../components/useUser';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { removeFight } from '../lib/data';
-import { Post } from '../lib/data';
-import { FightHistory } from '../lib/data';
+import { removeFight, Post, FightHistory } from '../lib/data';
+
 export type Profile = User | FighterUser | PromoterUser;
 
 export function ProfilePage() {
@@ -42,50 +43,44 @@ export function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const { user } = useUser();
   const [tabIndex, setTabIndex] = useState(0);
-
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedFightId, setSelectedFightId] = useState<number | null>(null);
+
+  const isOwner = user?.userId === Number(userId);
+  const isFighter = profile?.userType === 'fighter';
 
   useEffect(() => {
     const fetchProfileAndData = async () => {
       try {
-        const profileResponse = await fetch(`/api/profile/${userId}`);
-        const profileData: Profile = await profileResponse.json();
+        const profileRes = await fetch(`/api/profile/${userId}`);
+        const profileData: Profile = await profileRes.json();
         setProfile(profileData);
 
-        const postsResponse = await fetch(`/api/profile/${userId}/posts`);
-        const postsData = await postsResponse.json();
+        const postsRes = await fetch(`/api/profile/${userId}/posts`);
+        const postsData = await postsRes.json();
         setPosts(postsData);
 
         if (profileData.userType === 'fighter') {
-          const fightsResponse = await fetch(`/api/profile/${userId}/fights`);
-          const fightsData = await fightsResponse.json();
+          const fightsRes = await fetch(`/api/profile/${userId}/fights`);
+          const fightsData = await fightsRes.json();
           setFights(fightsData);
         }
       } catch (err) {
-        setError('Error fetching profile or data');
         console.error(err);
+        setError('Error fetching profile or data.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchProfileAndData();
   }, [userId]);
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Typography color="error">{error}</Typography>;
-
-  const isFighter = profile?.userType === 'fighter';
-
   const handleDeleteFight = async () => {
-    if (selectedFightId === null) return;
-
+    if (!selectedFightId) return;
     try {
       await removeFight(selectedFightId);
-
-      setFights((prevFights) =>
-        prevFights.filter((fight) => fight.fightId !== selectedFightId)
+      setFights((prev) =>
+        prev.filter((fight) => fight.fightId !== selectedFightId)
       );
       setOpenDialog(false);
     } catch (err) {
@@ -99,32 +94,58 @@ export function ProfilePage() {
     setOpenDialog(true);
   };
 
-  const handleDialogClose = () => {
-    setOpenDialog(false);
-  };
+  const handleDialogClose = () => setOpenDialog(false);
+
+  if (loading) return <CircularProgress />;
+  if (error) return <Typography color="error">{error}</Typography>;
+  if (!profile) return null;
 
   return (
-    <Container>
-      <Paper sx={{ p: 4 }}>
-        <Box display="flex" justifyContent="center" mb={4}>
-          <Avatar
-            alt="Profile Picture"
-            src={profile?.profilePictureUrl || '/images/Avatar-Default.webp'}
-            sx={{ width: 100, height: 100 }}
-          />
-        </Box>
+    <Container maxWidth="md">
+      <Paper sx={{ p: 4, mt: 4 }}>
+        {/* Profile Header */}
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={3}
+          alignItems="center"
+          justifyContent="space-between"
+          mb={3}>
+          <Stack direction="row" spacing={3} alignItems="center">
+            <Avatar
+              src={profile.profilePictureUrl || '/images/Avatar-Default.webp'}
+              sx={{ width: 100, height: 100 }}
+            />
+            <Box>
+              <Typography variant="h5">{profile.fullName}</Typography>
+              <Typography variant="subtitle1" color="text.secondary">
+                @{profile.username}
+              </Typography>
+              {profile.location && (
+                <Typography variant="body2" color="text.secondary">
+                  📍 {profile.location}
+                </Typography>
+              )}
+              {profile.bio && (
+                <Typography variant="body2" mt={1}>
+                  {profile.bio}
+                </Typography>
+              )}
+            </Box>
+          </Stack>
 
-        {user?.userId === Number(userId) && (
-          <Stack direction="row" justifyContent="space-between" mb={2}>
+          {isOwner && (
             <Button
-              variant="contained"
+              variant={isEditing ? 'outlined' : 'contained'}
               onClick={() => setIsEditing((prev) => !prev)}>
               {isEditing ? 'Cancel' : 'Edit Profile'}
             </Button>
-          </Stack>
-        )}
+          )}
+        </Stack>
 
-        {isEditing && profile ? (
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Edit Form */}
+        {isEditing ? (
           isFighterUser(profile) ? (
             <UpdateForm
               userType="fighter"
@@ -144,121 +165,58 @@ export function ProfilePage() {
           ) : null
         ) : (
           <>
-            <Typography variant="h4" align="center" gutterBottom>
-              {profile?.fullName}
-            </Typography>
-            <Typography variant="body1" align="center" gutterBottom>
-              @{profile?.username}
-            </Typography>
+            {/* Tabs */}
+            <Tabs
+              value={tabIndex}
+              onChange={(_, v) => setTabIndex(v)}
+              sx={{ mb: 2 }}>
+              <Tab label="Posts" />
+              {isFighter && <Tab label="Fights" />}
+              <Tab label="About" />
+            </Tabs>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography variant="body1">
-                Location: {profile?.location}
-              </Typography>
-              <Typography variant="body2">Bio: {profile?.bio || ''}</Typography>
-
-              {isFighter && (
-                <Box>
-                  <Typography variant="h6">
-                    Weight: {(profile as FighterUser).weight} lbs
-                  </Typography>
-                  <Typography variant="h6">
-                    Height: {(profile as FighterUser).height}
-                  </Typography>
-                  <Typography variant="h6">
-                    Record: {(profile as FighterUser).record}
-                  </Typography>
-                  <Typography variant="h6">
-                    Gym: {(profile as FighterUser).gymName}
-                  </Typography>
-                  <Typography variant="h6">
-                    Pullouts: {(profile as FighterUser).pullouts}
-                  </Typography>
-                  <Typography variant="h6">
-                    Weight Misses: {(profile as FighterUser).weightMisses}
-                  </Typography>
-                  <Typography variant="h6">
-                    Finishes: {(profile as FighterUser).finishes}
-                  </Typography>
-                </Box>
-              )}
-
-              {profile?.userType === 'promoter' && (
-                <Box>
-                  <Typography variant="h6">
-                    Promotion: {(profile as PromoterUser).promotion}
-                  </Typography>
-                  <Typography variant="h6">
-                    Promoter: {(profile as PromoterUser).promoter}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          </>
-        )}
-
-        <Box mt={4}>
-          <Tabs
-            value={tabIndex}
-            onChange={(_, newValue) => setTabIndex(newValue)}>
-            <Tab label="Posts" />
-            {isFighter && <Tab label="Fight History" />}
-          </Tabs>
-
-          {tabIndex === 0 && (
-            <Box mt={2}>
-              <Typography variant="h5" gutterBottom>
-                {profile?.fullName}'s Post History
-              </Typography>
-              {posts.length > 0 ? (
-                posts.map((post) => (
-                  <Box key={post.postId} mb={4}>
-                    <Paper sx={{ p: 2 }}>
-                      <Box display="flex" alignItems="center" mb={2}>
+            {/* Tab Content */}
+            {tabIndex === 0 && (
+              <Box>
+                {posts.length > 0 ? (
+                  posts.map((post) => (
+                    <Paper key={post.postId} sx={{ p: 2, mb: 3 }}>
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        alignItems="center"
+                        mb={2}>
                         <Avatar
-                          alt={post.username}
                           src={
                             post.profilePictureUrl ||
                             '/images/Avatar-Default.webp'
                           }
-                          sx={{ width: 40, height: 40, mr: 2 }}
+                          sx={{ width: 40, height: 40 }}
                         />
-                        <Typography variant="body1" fontWeight="bold">
+                        <Typography fontWeight="bold">
                           {post.username}
                         </Typography>
-                      </Box>
-                      <Typography variant="body1">
-                        {post.textContent}
-                      </Typography>
+                      </Stack>
+                      <Typography>{post.textContent}</Typography>
                       {post.mediaUrls.length > 0 && (
                         <Box mt={2}>
-                          {post.mediaUrls.map((url, index) => (
-                            <Box key={index} sx={{ mb: 2 }}>
+                          {post.mediaUrls.map((url, i) => (
+                            <Box key={i} mb={2}>
                               {url.match(/\.(mp4|mov|webm)$/i) ? (
-                                <Box
-                                  component="video"
+                                <video
                                   src={url}
                                   controls
-                                  sx={{
-                                    width: '100%',
-                                    maxWidth: 400,
-                                    maxHeight: 300,
-                                    borderRadius: 2,
-                                    display: 'block',
-                                  }}
+                                  style={{ maxWidth: '100%', borderRadius: 8 }}
                                 />
                               ) : (
-                                <Box
-                                  component="img"
+                                <img
                                   src={url}
-                                  alt={`media-${index}`}
-                                  sx={{
-                                    width: '100%',
-                                    maxWidth: 400,
+                                  alt={`media-${i}`}
+                                  style={{
+                                    maxWidth: '100%',
                                     maxHeight: 300,
+                                    borderRadius: 8,
                                     objectFit: 'cover',
-                                    borderRadius: 2,
-                                    display: 'block',
                                   }}
                                 />
                               )}
@@ -266,70 +224,105 @@ export function ProfilePage() {
                           ))}
                         </Box>
                       )}
-                      <Typography variant="body2" color="textSecondary" mt={2}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        display="block"
+                        mt={2}>
                         Posted on {new Date(post.createdAt).toLocaleString()}
                       </Typography>
                     </Paper>
-                  </Box>
-                ))
-              ) : (
-                <Typography>No posts available</Typography>
-              )}
-            </Box>
-          )}
+                  ))
+                ) : (
+                  <Typography>No posts available.</Typography>
+                )}
+              </Box>
+            )}
 
-          {tabIndex === 1 && isFighter && (
-            <Box mt={2}>
-              <Typography variant="h5" gutterBottom>
-                {profile?.fullName}'s Fight History
-              </Typography>
-              {fights.length > 0 ? (
-                fights.map((fight) => (
-                  <Box key={fight.fightId} mb={2}>
-                    <Paper sx={{ p: 2 }}>
-                      <Typography variant="body1">
+            {tabIndex === 1 && isFighter && (
+              <Box>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={2}>
+                  <Typography variant="h6">
+                    {profile.fullName}'s Fight History
+                  </Typography>
+                  {isOwner && (
+                    <IconButton
+                      component={Link}
+                      to={'/fights/new'}
+                      color="primary"
+                      aria-label="Add Fight">
+                      <AddIcon />
+                    </IconButton>
+                  )}
+                </Stack>
+                {fights.length > 0 ? (
+                  fights.map((fight) => (
+                    <Paper key={fight.fightId} sx={{ p: 2, mb: 2 }}>
+                      <Typography>
                         Date: {new Date(fight.date).toLocaleDateString()}
                       </Typography>
-                      <Typography variant="body1">
-                        Outcome: {fight.outcome}
-                      </Typography>
-                      <Typography variant="body1">
-                        Decision: {fight.decision}
-                      </Typography>
-                      <Typography variant="body1">
-                        Promotion: {fight.promotion}
-                      </Typography>
-
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDialogOpen(fight.fightId)}>
-                        <DeleteIcon />
-                      </IconButton>
+                      <Typography>Outcome: {fight.outcome}</Typography>
+                      <Typography>Decision: {fight.decision}</Typography>
+                      <Typography>Promotion: {fight.promotion}</Typography>
+                      {isOwner && (
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDialogOpen(fight.fightId)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      )}
                     </Paper>
-                  </Box>
-                ))
-              ) : (
-                <Typography>No fight history available.</Typography>
-              )}
-            </Box>
-          )}
-        </Box>
-      </Paper>
+                  ))
+                ) : (
+                  <Typography>No fight history available.</Typography>
+                )}
+              </Box>
+            )}
 
-      <Dialog open={openDialog} onClose={handleDialogClose}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete this fight?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleDeleteFight} color="error">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {tabIndex === 2 && (
+              <Box>
+                {isFighterUser(profile) && (
+                  <>
+                    <Typography>Weight: {profile.weight} lbs</Typography>
+                    <Typography>Height: {profile.height}</Typography>
+                    <Typography>Record: {profile.record}</Typography>
+                    <Typography>Gym: {profile.gymName}</Typography>
+                    <Typography>Pullouts: {profile.pullouts}</Typography>
+                    <Typography>
+                      Weight Misses: {profile.weightMisses}
+                    </Typography>
+                    <Typography>Finishes: {profile.finishes}</Typography>
+                  </>
+                )}
+                {isPromoterUser(profile) && (
+                  <>
+                    <Typography>Promotion: {profile.promotion}</Typography>
+                    <Typography>Promoter: {profile.promoter}</Typography>
+                  </>
+                )}
+              </Box>
+            )}
+          </>
+        )}
+
+        {/* Delete Fight Dialog */}
+        <Dialog open={openDialog} onClose={handleDialogClose}>
+          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogContent>
+            <Typography>Are you sure you want to delete this fight?</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDialogClose}>Cancel</Button>
+            <Button color="error" onClick={handleDeleteFight}>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Paper>
     </Container>
   );
 }
