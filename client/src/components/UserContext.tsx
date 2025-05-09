@@ -7,7 +7,7 @@ export function isFighterUser(profile: Profile): profile is FighterUser {
 }
 
 export function isPromoterUser(profile: Profile): profile is PromoterUser {
-  return profile.userType === 'promoter' && 'promotion' in profile;
+  return profile.userType === 'promoter';
 }
 
 export type User = {
@@ -35,7 +35,7 @@ export type FighterUser = User & {
 export type PromoterUser = User & {
   promotion: string;
   promoter: string;
-  nextEvent?: string;
+  nextEvent?: Date;
 };
 
 export type UserContextValues = {

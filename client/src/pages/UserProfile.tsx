@@ -18,6 +18,7 @@ import {
   Divider,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+// import EditSharpIcon from '@mui/icons-material/EditSharp';
 import {
   User,
   FighterUser,
@@ -54,6 +55,7 @@ export function ProfilePage() {
       try {
         const profileRes = await fetch(`/api/profile/${userId}`);
         const profileData: Profile = await profileRes.json();
+        console.log('Fetched profile:', profileData);
         setProfile(profileData);
 
         const postsRes = await fetch(`/api/profile/${userId}/posts`);
@@ -99,6 +101,23 @@ export function ProfilePage() {
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
   if (!profile) return null;
+
+  // const formatDate = (dateStr: string) => {
+  //   const date = new Date(dateStr);
+  //   return date.toDateString(); // Adjust date format as needed
+  // };
+
+  function formatUTCDate(date: Date) {
+    const month = date.getUTCMonth() + 1; // getUTCMonth() is 0-indexed
+    const day = date.getUTCDate();
+    const year = date.getUTCFullYear();
+
+    // Pad single digits with leading zero (optional, for consistent format)
+    const paddedMonth = month.toString().padStart(2, '0');
+    const paddedDay = day.toString().padStart(2, '0');
+
+    return `${paddedMonth}/${paddedDay}/${year}`;
+  }
 
   return (
     <Container maxWidth="md">
@@ -231,6 +250,16 @@ export function ProfilePage() {
                         mt={2}>
                         Posted on {new Date(post.createdAt).toLocaleString()}
                       </Typography>
+                      {/* {isOwner && (
+                        <IconButton
+                          component={Link}
+                          to={`details/${post.postId}`}
+                          color="primary"
+                          aria-label="Edit Post"
+                          sx={{ position: 'absolute', top: 16, right: 16 }}>
+                          <EditSharpIcon />
+                        </IconButton>
+                      )} */}
                     </Paper>
                   ))
                 ) : (
@@ -239,7 +268,7 @@ export function ProfilePage() {
               </Box>
             )}
 
-            {tabIndex === 1 && isFighter && (
+            {tabIndex === 1 && isFighter ? (
               <Box>
                 <Stack
                   direction="row"
@@ -281,7 +310,18 @@ export function ProfilePage() {
                   <Typography>No fight history available.</Typography>
                 )}
               </Box>
-            )}
+            ) : tabIndex === 1 && isPromoterUser(profile) ? (
+              <>
+                <Typography>Promotion: {profile.promotion}</Typography>
+                <Typography>Promoter: {profile.promoter}</Typography>
+                <Typography>
+                  Next Event:{' '}
+                  {profile.nextEvent
+                    ? formatUTCDate(new Date(profile.nextEvent))
+                    : 'No event scheduled.'}
+                </Typography>
+              </>
+            ) : null}
 
             {tabIndex === 2 && (
               <Box>
@@ -302,6 +342,12 @@ export function ProfilePage() {
                   <>
                     <Typography>Promotion: {profile.promotion}</Typography>
                     <Typography>Promoter: {profile.promoter}</Typography>
+                    <Typography>
+                      Promoter:{' '}
+                      {profile.nextEvent
+                        ? formatUTCDate(profile.nextEvent)
+                        : 'No event scheduled.'}
+                    </Typography>
                   </>
                 )}
               </Box>

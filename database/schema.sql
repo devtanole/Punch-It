@@ -35,7 +35,7 @@ CREATE TABLE "promoter_profile" (
   "userId" int PRIMARY KEY,
   "promotion" text NOT NULL,
   "promoter" text NOT NULL,
-  "nextEvent" timestamptz
+  "nextEvent" date
 );
 
 CREATE TABLE "posts" (

@@ -21,7 +21,7 @@ export type PromoterProps = {
   bio?: string;
   promotion: string;
   promoter: string;
-  nextEvent?: string;
+  nextEvent?: Date;
 };
 
 type UserProps = {
