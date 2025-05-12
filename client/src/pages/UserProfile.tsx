@@ -338,7 +338,7 @@ export function ProfilePage() {
                     <Typography>Finishes: {profile.finishes}</Typography>
                   </>
                 )}
-                {isPromoterUser(profile) && (
+                {/* {isPromoterUser(profile) && (
                   <>
                     <Typography>Promotion: {profile.promotion}</Typography>
                     <Typography>Promoter: {profile.promoter}</Typography>
@@ -349,7 +349,7 @@ export function ProfilePage() {
                         : 'No event scheduled.'}
                     </Typography>
                   </>
-                )}
+                )} */}
               </Box>
             )}
           </>
