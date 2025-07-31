@@ -16,6 +16,8 @@ Profile info
 
 Posts (videos/images/text)
 
+Comments
+
 Fight records
 
 📷 <strong>Media Uploads via Cloudinary</strong>
