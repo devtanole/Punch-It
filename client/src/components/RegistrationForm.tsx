@@ -39,7 +39,7 @@ export function RegistrationForm() {
   const [promoterFormData, setPromoterFormData] = useState<PromoterProps>({
     promotion: '',
     promoter: '',
-    nextEvent: '',
+    nextEvent: new Date() || undefined,
   });
 
   const handleChange = (name: string, value: string) => {

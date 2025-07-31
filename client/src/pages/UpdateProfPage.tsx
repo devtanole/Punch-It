@@ -79,7 +79,7 @@ export function UpdateForm({
     bio: '',
     promotion: '',
     promoter: '',
-    nextEvent: '',
+    nextEvent: new Date() || undefined,
   });
 
   const handleChange = (name: string, value: string) => {
