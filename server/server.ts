@@ -5,6 +5,8 @@ import pg from 'pg';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 type Auth = {
   email: string;
@@ -832,7 +834,11 @@ app.delete(
 );
 
 // Create paths for static directories
-const reactStaticDir = new URL('../client/dist', import.meta.url).pathname;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const reactStaticDir = path.resolve(__dirname, '../client/dist');
 const uploadsStaticDir = new URL('public', import.meta.url).pathname;
 
 app.use(express.static(reactStaticDir));
@@ -849,6 +855,7 @@ app.get('/api/hello', (req, res) => {
  * It responds with `index.html` to support page refreshes with React Router.
  * This must be the _last_ route, just before errorMiddleware.
  */
+console.log('React static dir:', reactStaticDir);
 app.get('*', (req, res) => res.sendFile(`${reactStaticDir}/index.html`));
 
 app.use(errorMiddleware);
