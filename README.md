@@ -45,6 +45,11 @@ Auth: JWT
 
 Media: Cloudinary API for file storage
 
+# 📸 Screenshots
+
+<img width="1792" height="1120" alt="Screenshot 2025-07-30 at 6 46 39 PM" src="https://github.com/user-attachments/assets/e12e92f2-6f48-4feb-8e72-6b8cbb09c53c" />
+
+
 
 
 
