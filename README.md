@@ -5,11 +5,11 @@ Punch It is a full-stack social networking platform built for the fight communit
 <strong>🔐 User Authentication</strong>
 Secure login/signup system supporting two account types:
 
-Fighters: Share fight history, stats, and highlights
+<strong>Fighters:</strong> Share fight history, stats, and highlights
 
-Promoters: Discover talent and post event updates
+<strong>Promoters:</strong> Discover talent and post event updates
 
-📝 Full CRUD Functionality
+📝 <strong>Full CRUD Functionality</strong>
 Users can create, edit, and delete:
 
 Profile info
@@ -18,13 +18,13 @@ Posts (videos/images/text)
 
 Fight records
 
-📷 Media Uploads via Cloudinary
+📷 <strong>Media Uploads via Cloudinary</strong>
 Fighters can upload training footage, fight highlights, or promotional graphics with seamless video/image integration.
 
-🎨 Modern UI with Material UI
+🎨 <strong>Modern UI with Material UI</strong>
 Clean, responsive, and mobile-friendly interface using Material UI components.
 
-🧾 Profile Tabs
+🧾 <strong>Profile Tabs</strong>
 Each user profile features multiple tabs for:
 
 🧍 Bio & contact info
