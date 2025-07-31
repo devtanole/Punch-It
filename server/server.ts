@@ -856,7 +856,9 @@ app.get('/api/hello', (req, res) => {
  * This must be the _last_ route, just before errorMiddleware.
  */
 console.log('React static dir:', reactStaticDir);
-app.get('*', (req, res) => res.sendFile(`${reactStaticDir}/index.html`));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(reactStaticDir, 'index.html'));
+});
 
 app.use(errorMiddleware);
 
