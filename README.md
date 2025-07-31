@@ -1,8 +1,8 @@
 # 🥊 Punch It
 Punch It is a full-stack social networking platform built for the fight community — connecting amateur fighters and promoters in a single, professional space. Think LinkedIn meets Twitter, tailored specifically for the fight scene.
 
-📌 Features
-🔐 User Authentication
+# 📌 Features
+<strong>🔐 User Authentication</strong>
 Secure login/signup system supporting two account types:
 
 Fighters: Share fight history, stats, and highlights
@@ -36,12 +36,12 @@ Each user profile features multiple tabs for:
 💬 Social Feed
 Users can post updates, promote events, or engage with the fight community.
 
-🚀 Tech Stack
-Frontend: React, TypeScript, Material UI
+# 🚀 Tech Stack
+<strong>Frontend:</strong> React, TypeScript, Material UI
 
-Backend: Node.js, Express, PostgreSQL
+<strong>Backend:</strong> Node.js, Express, PostgreSQL
 
-Auth: JWT + bcrypt
+Auth: JWT
 
 Media: Cloudinary API for file storage
 
