@@ -838,7 +838,10 @@ app.delete(
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const reactStaticDir = path.resolve(__dirname, '../client/dist');
+console.log('__dirname:', __dirname);
+console.log('reactStaticDir:', path.resolve(__dirname, '../client/dist'));
+
+const reactStaticDir = path.resolve(__dirname, '../../client/dist');
 const uploadsStaticDir = new URL('public', import.meta.url).pathname;
 
 app.use(express.static(reactStaticDir));
