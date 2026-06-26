@@ -29,6 +29,7 @@ export function PostFeed() {
 
   useEffect(() => {
     async function load() {
+      setIsLoading(true);
       try {
         const posts = await readPosts();
 
@@ -104,7 +105,11 @@ export function PostFeed() {
         </Stack>
 
         {posts?.map((post) => (
-          <PostCard key={post.postId} post={post} />
+          <PostCard
+            key={post.postId}
+            post={post}
+            currentUserId={user?.userId}
+          />
         ))}
       </Box>
     </Stack>
@@ -113,9 +118,10 @@ export function PostFeed() {
 
 type PostProps = {
   post: Post;
+  currentUserId?: number;
 };
 
-function PostCard({ post }: PostProps) {
+function PostCard({ post, currentUserId }: PostProps) {
   return (
     <Card sx={{ mb: 3 }}>
       <CardContent>
@@ -138,12 +144,14 @@ function PostCard({ post }: PostProps) {
             </Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
-          <IconButton
-            component={Link}
-            to={`details/${post.postId}`}
-            color="primary">
-            <EditSharpIcon />
-          </IconButton>
+          {currentUserId === post.userId && (
+            <IconButton
+              component={Link}
+              to={`details/${post.postId}`}
+              color="primary">
+              <EditSharpIcon />
+            </IconButton>
+          )}
         </Stack>
 
         <Typography variant="body1" sx={{ mt: 2 }}>
