@@ -7,6 +7,8 @@ import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 type Auth = {
   email: string;
@@ -70,6 +72,16 @@ if (!hashSecret) {
 }
 
 const app = express();
+
+app.use(helmet());
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // max 20 attempts per window
+  message: 'Too many attempts, please try again later.',
+});
+
+app.use('/api/auth', authLimiter);
 
 app.use(express.json());
 
