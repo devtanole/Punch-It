@@ -1,6 +1,6 @@
 import { useEffect, ReactNode, createContext, useState } from 'react';
 import { readUser, readToken, removeAuth, saveAuth } from '../lib/data';
-import { Profile } from '../pages/UserProfile';
+import { Profile } from '../pages/profile/UserProfile';
 
 export function isFighterUser(profile: Profile): profile is FighterUser {
   return profile.userType === 'fighter' && 'weight' in profile;

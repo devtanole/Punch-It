@@ -6,7 +6,7 @@ import { AuthPage } from './pages/AuthPage';
 import { PostForm } from './pages/PostForm';
 import { PostFeed } from './pages/PostList';
 import { NotFound } from './NotFound';
-import { ProfilePage } from './pages/UserProfile';
+import { ProfilePage } from './pages/profile/UserProfile';
 import { UserSearchBar } from './pages/Search';
 import { FightHistoryForm } from './pages/FightHistoryForm';
 
