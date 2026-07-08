@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { followsRouter } from './routes/follows.js';
 
 type Auth = {
   email: string;
@@ -80,6 +81,8 @@ const authLimiter = rateLimit({
   max: 20, // max 20 attempts per window
   message: 'Too many attempts, please try again later.',
 });
+
+app.use('/api/follows', followsRouter(db));
 
 app.use('/api/auth', authLimiter);
 
