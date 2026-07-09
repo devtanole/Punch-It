@@ -3,52 +3,14 @@ import {
   FighterProps,
   PromoterProps,
 } from '../components/ConditionalFormFields';
-
-export type Post = {
-  postId: number;
-  userId: number;
-  textContent: string;
-  mediaUrls: string[];
-  createdAt: string;
-  username: string;
-  profilePictureUrl: string;
-};
-
-type Profile = User | FighterUser | PromoterUser;
-
-export type NewPost = {
-  textContent: string;
-  mediaUrls: string[];
-};
-
-export type Comment = {
-  commentId: number;
-  postId: number;
-  userId: number;
-  profilePictureUrl: string;
-  username: string;
-  text: string;
-  createdAt: string;
-};
-
-export type FightHistory = {
-  fightId: number;
-  fighterId: number;
-  date: string;
-  outcome: string;
-  decision: string;
-  promotion: string;
-  username: string;
-};
-
-export type NewFightEntry = {
-  date: string;
-  outcome: string;
-  decision: string;
-  promotion: string;
-};
-
 import { User } from '../components/UserContext';
+import {
+  type Post,
+  type NewPost,
+  type Comment,
+  type FightHistory,
+  type NewFightEntry,
+} from './types';
 
 const authKey = 'um.auth';
 
@@ -56,6 +18,8 @@ type Auth = {
   user: User;
   token: string;
 };
+
+type Profile = User | FighterUser | PromoterUser;
 
 export function saveAuth(user: User, token: string): void {
   const auth: Auth = { user, token };
