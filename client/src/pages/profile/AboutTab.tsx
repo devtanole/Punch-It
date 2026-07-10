@@ -48,7 +48,7 @@ export function AboutTab({ profile }: Props) {
         <StatRow label="Record" value={f.record} />
         <StatRow label="Weight" value={f.weight ? `${f.weight} lbs` : null} />
         <StatRow label="Height" value={f.height} />
-        <StatRow label="Weight Class" value={f.weight} />
+        {/* <StatRow label="Weight Class" value={f.weight} /> */}
         <StatRow label="Gym" value={f.gymName} />
         <Divider sx={{ my: 2 }} />
         <StatRow label="Finishes" value={f.finishes} />
