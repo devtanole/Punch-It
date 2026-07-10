@@ -1,5 +1,5 @@
 import { Paper, Avatar, Stack, Typography, Box } from '@mui/material';
-import { Post } from '../../lib/data';
+import { Post } from '../../lib/types';
 
 type Props = {
   posts: Post[];
