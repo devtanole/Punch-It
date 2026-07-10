@@ -248,38 +248,47 @@ export async function removeComment(
 }
 
 export async function fetchFollowStatus(userId: number): Promise<FollowStatus> {
+  const token = readToken();
   const res = await fetch(`/api/follows/status/${userId}`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('Failed to fetch follow status');
-  return res.json();
+  return res.json() as Promise<FollowStatus>;
 }
 
 export async function followUser(userId: number): Promise<Follow> {
+  const token = readToken();
   const res = await fetch(`/api/follows/${userId}`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('Failed to follow user');
-  return res.json();
+  return res.json() as Promise<Follow>;
 }
 
 export async function unfollowUser(userId: number): Promise<void> {
+  const token = readToken();
   const res = await fetch(`/api/follows/${userId}`, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('Failed to unfollow user');
 }
 
 export async function fetchFollowers(userId: number): Promise<FollowUser[]> {
-  const res = await fetch(`/api/follows/${userId}/followers`);
+  const token = readToken();
+  const res = await fetch(`/api/follows/${userId}/followers`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!res.ok) throw new Error('Failed to fetch followers');
-  return res.json();
+  return res.json() as Promise<FollowUser[]>;
 }
 
 export async function fetchFollowing(userId: number): Promise<FollowUser[]> {
-  const res = await fetch(`/api/follows/${userId}/following`);
+  const token = readToken();
+  const res = await fetch(`/api/follows/${userId}/following`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!res.ok) throw new Error('Failed to fetch following');
-  return res.json();
+  return res.json() as Promise<FollowUser[]>;
 }
