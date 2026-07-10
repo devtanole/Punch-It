@@ -11,6 +11,7 @@ import {
   type FightHistory,
   type NewFightEntry,
 } from './types';
+import type { Follow, FollowStatus, FollowUser } from './types';
 
 const authKey = 'um.auth';
 
@@ -244,4 +245,41 @@ export async function removeComment(
   };
   const res = await fetch(`api/posts/${postId}/comments/${commentId}`, req);
   if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
+}
+
+export async function fetchFollowStatus(userId: number): Promise<FollowStatus> {
+  const res = await fetch(`/api/follows/status/${userId}`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch follow status');
+  return res.json();
+}
+
+export async function followUser(userId: number): Promise<Follow> {
+  const res = await fetch(`/api/follows/${userId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  });
+  if (!res.ok) throw new Error('Failed to follow user');
+  return res.json();
+}
+
+export async function unfollowUser(userId: number): Promise<void> {
+  const res = await fetch(`/api/follows/${userId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  });
+  if (!res.ok) throw new Error('Failed to unfollow user');
+}
+
+export async function fetchFollowers(userId: number): Promise<FollowUser[]> {
+  const res = await fetch(`/api/follows/${userId}/followers`);
+  if (!res.ok) throw new Error('Failed to fetch followers');
+  return res.json();
+}
+
+export async function fetchFollowing(userId: number): Promise<FollowUser[]> {
+  const res = await fetch(`/api/follows/${userId}/following`);
+  if (!res.ok) throw new Error('Failed to fetch following');
+  return res.json();
 }
