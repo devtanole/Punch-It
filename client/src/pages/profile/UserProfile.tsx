@@ -22,10 +22,18 @@ import {
 } from '../../components/UserContext';
 import { useUser } from '../../components/useUser';
 import { UpdateForm } from './UpdateProfPage';
-import { Post, FightHistory } from '../../lib/data';
+import { Post, FightHistory } from '../../lib/types';
 import { PostsTab } from './PostsTab';
 import { FightsTab } from './FightsTab';
 import { AboutTab } from './AboutTab';
+import { FollowButton } from '../../components/FollowButton';
+import { FollowListModal } from '../../components/FollowListModal';
+import {
+  fetchFollowStatus,
+  fetchFollowers,
+  fetchFollowing,
+} from '../../lib/data';
+import type { FollowUser } from '../../lib/types';
 
 export type Profile = User | FighterUser | PromoterUser;
 
@@ -40,6 +48,13 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followers, setFollowers] = useState<FollowUser[]>([]);
+  const [following, setFollowing] = useState<FollowUser[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'Followers' | 'Following'>(
+    'Followers'
+  );
 
   const isOwner = user?.userId === Number(userId);
   const isFighter = profile?.userType === 'fighter';
@@ -59,6 +74,18 @@ export function ProfilePage() {
           const fightsRes = await fetch(`/api/profile/${userId}/fights`);
           if (fightsRes.ok) setFights(await fightsRes.json());
         }
+
+        const [followersRes, followingRes] = await Promise.all([
+          fetchFollowers(Number(userId)),
+          fetchFollowing(Number(userId)),
+        ]);
+        setFollowers(followersRes);
+        setFollowing(followingRes);
+
+        if (user && !isOwner) {
+          const statusRes = await fetchFollowStatus(Number(userId));
+          setIsFollowing(statusRes.isFollowing);
+        }
       } catch (err) {
         console.error(err);
         setError('Error loading profile.');
@@ -67,7 +94,30 @@ export function ProfilePage() {
       }
     }
     fetchAll();
-  }, [userId]);
+  }, [userId, user, isOwner]);
+
+  function handleFollowChange(nowFollowing: boolean) {
+    if (nowFollowing && user) {
+      setFollowers((prev) => [
+        ...prev,
+        {
+          userId: user.userId,
+          username: user.username,
+          fullName: '',
+          profilePictureUrl: null,
+          userType: 'fighter' as const,
+        },
+      ]);
+    } else {
+      setFollowers((prev) => prev.filter((f) => f.userId !== user?.userId));
+    }
+    setIsFollowing(nowFollowing);
+  }
+
+  function openModal(type: 'Followers' | 'Following') {
+    setModalType(type);
+    setModalOpen(true);
+  }
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
@@ -103,15 +153,47 @@ export function ProfilePage() {
                   {profile.bio}
                 </Typography>
               )}
+
+              {/* Follower / following counts */}
+              <Stack direction="row" spacing={2} mt={1}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                  onClick={() => openModal('Followers')}>
+                  <strong>{followers.length}</strong> Followers
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                  onClick={() => openModal('Following')}>
+                  <strong>{following.length}</strong> Following
+                </Typography>
+              </Stack>
             </Box>
           </Stack>
-          {isOwner && (
-            <Button
-              variant={isEditing ? 'outlined' : 'contained'}
-              onClick={() => setIsEditing((prev) => !prev)}>
-              {isEditing ? 'Cancel' : 'Edit Profile'}
-            </Button>
-          )}
+
+          {/* Action buttons */}
+          <Stack direction="row" spacing={1} alignItems="center">
+            {isOwner ? (
+              <Button
+                variant={isEditing ? 'outlined' : 'contained'}
+                onClick={() => setIsEditing((prev) => !prev)}>
+                {isEditing ? 'Cancel' : 'Edit Profile'}
+              </Button>
+            ) : (
+              <FollowButton
+                userId={Number(userId)}
+                initialIsFollowing={isFollowing}
+                onFollowChange={handleFollowChange}
+              />
+            )}
+          </Stack>
         </Stack>
 
         <Divider sx={{ mb: 2 }} />
@@ -169,6 +251,14 @@ export function ProfilePage() {
               )}
           </>
         )}
+
+        {/* Followers / Following modal */}
+        <FollowListModal
+          open={modalOpen}
+          title={modalType}
+          users={modalType === 'Followers' ? followers : following}
+          onClose={() => setModalOpen(false)}
+        />
       </Paper>
     </Container>
   );
