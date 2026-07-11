@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Typography,
   CircularProgress,
@@ -12,7 +12,9 @@ import {
   Tabs,
   Tab,
   Divider,
+  IconButton,
 } from '@mui/material';
+import ChatIcon from '@mui/icons-material/Chat';
 import {
   User,
   FighterUser,
@@ -22,7 +24,7 @@ import {
 } from '../../components/UserContext';
 import { useUser } from '../../components/useUser';
 import { UpdateForm } from './UpdateProfPage';
-import { Post, FightHistory } from '../../lib/types';
+import { Post, FightHistory, FollowUser } from '../../lib/types';
 import { PostsTab } from './PostsTab';
 import { FightsTab } from './FightsTab';
 import { AboutTab } from './AboutTab';
@@ -32,14 +34,15 @@ import {
   fetchFollowStatus,
   fetchFollowers,
   fetchFollowing,
+  startConversation,
 } from '../../lib/data';
-import type { FollowUser } from '../../lib/types';
 
 export type Profile = User | FighterUser | PromoterUser;
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useUser();
+  const navigate = useNavigate();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -83,8 +86,12 @@ export function ProfilePage() {
         setFollowing(followingRes);
 
         if (user && !isOwner) {
-          const statusRes = await fetchFollowStatus(Number(userId));
-          setIsFollowing(statusRes.isFollowing);
+          try {
+            const statusRes = await fetchFollowStatus(Number(userId));
+            setIsFollowing(statusRes.isFollowing);
+          } catch (err) {
+            console.error('Could not fetch follow status', err);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -117,6 +124,15 @@ export function ProfilePage() {
   function openModal(type: 'Followers' | 'Following') {
     setModalType(type);
     setModalOpen(true);
+  }
+
+  async function handleMessageClick() {
+    try {
+      const convo = await startConversation(Number(userId));
+      navigate(`/messages/${convo.conversationId}`);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   if (loading) return <CircularProgress />;
@@ -187,11 +203,16 @@ export function ProfilePage() {
                 {isEditing ? 'Cancel' : 'Edit Profile'}
               </Button>
             ) : (
-              <FollowButton
-                userId={Number(userId)}
-                initialIsFollowing={isFollowing}
-                onFollowChange={handleFollowChange}
-              />
+              <Stack direction="row" spacing={1}>
+                <FollowButton
+                  userId={Number(userId)}
+                  initialIsFollowing={isFollowing}
+                  onFollowChange={handleFollowChange}
+                />
+                <IconButton color="primary" onClick={handleMessageClick}>
+                  <ChatIcon />
+                </IconButton>
+              </Stack>
             )}
           </Stack>
         </Stack>

@@ -9,6 +9,8 @@ import { NotFound } from './NotFound';
 import { ProfilePage } from './pages/profile/UserProfile';
 import { UserSearchBar } from './pages/Search';
 import { FightHistoryForm } from './pages/FightHistoryForm';
+import { MessagesInbox } from './pages/MessagesInbox';
+import { ConversationThread } from './pages/ConversationThread';
 
 // className = 'block border border-gray-600 rounded p-2 h-8 w-full mb-2';
 
@@ -24,6 +26,11 @@ export default function App() {
           <Route path="/fights/:fightId" element={<FightHistoryForm />} />
 
           <Route path="/profile/:userId" element={<ProfilePage />} />
+          <Route path="/messages" element={<MessagesInbox />} />
+          <Route
+            path="/messages/:conversationId"
+            element={<ConversationThread />}
+          />
           <Route path="/search" element={<UserSearchBar />} />
           <Route path="*" element={<NotFound />} />
         </Route>

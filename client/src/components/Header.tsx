@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useUser } from './useUser';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -12,8 +12,11 @@ import {
   Menu,
   MenuItem,
   IconButton,
+  Badge,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import ChatIcon from '@mui/icons-material/Chat';
+import { fetchUnreadCount } from '../lib/data';
 
 export function Header() {
   const { user, handleSignOut } = useUser();
@@ -27,6 +30,7 @@ export function Header() {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   function handleLogout(): void {
     handleSignOut();
@@ -53,6 +57,24 @@ export function Header() {
       console.error('Error searching users:', error);
     }
   };
+
+  // Poll for unread messages every 30 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    async function loadUnread() {
+      try {
+        const data = await fetchUnreadCount();
+        setUnreadCount(data.unreadCount);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadUnread();
+    const interval = setInterval(loadUnread, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   return (
     <>
@@ -103,6 +125,7 @@ export function Header() {
                 </MenuItem>
               </Menu>
             )}
+
             <Box
               sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
               <Typography
@@ -115,23 +138,35 @@ export function Header() {
                 Punch It
               </Typography>
             </Box>
+
             {user && (
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <TextField
                   value={searchQuery}
                   onChange={handleSearchChange}
                   label="Search Users"
                   variant="outlined"
                   size="small"
-                  sx={{ marginRight: 1 }}
                 />
                 <IconButton
                   onClick={(e) => setSearchAnchorEl(e.currentTarget)}
                   color="primary">
                   <SearchIcon />
                 </IconButton>
+
+                {/* Messages icon with unread badge */}
+                <IconButton
+                  color="primary"
+                  onClick={() => navigate('/messages')}>
+                  <Badge
+                    badgeContent={unreadCount > 0 ? unreadCount : null}
+                    color="error">
+                    <ChatIcon />
+                  </Badge>
+                </IconButton>
               </Box>
             )}
+
             <Menu
               anchorEl={searchAnchorEl}
               open={Boolean(searchAnchorEl)}
@@ -151,6 +186,7 @@ export function Header() {
                 <MenuItem disabled>No results found</MenuItem>
               )}
             </Menu>
+
             <div>
               {user ? (
                 <Button color="primary" onClick={handleLogout}>
