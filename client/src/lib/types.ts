@@ -93,3 +93,13 @@ export type Message = {
 export type UnreadCount = {
   unreadCount: number;
 };
+
+export type SearchResult = {
+  userId: number;
+  username: string;
+  fullName: string;
+  profilePictureUrl: string | null;
+  bio: string | null;
+  location: string;
+  userType: 'fighter' | 'promoter';
+};
