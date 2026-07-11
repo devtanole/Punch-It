@@ -12,6 +12,12 @@ import {
   type NewFightEntry,
 } from './types';
 import type { Follow, FollowStatus, FollowUser } from './types';
+import {
+  Message,
+  Conversation,
+  ConversationPreview,
+  UnreadCount,
+} from './types';
 
 const authKey = 'um.auth';
 
@@ -291,4 +297,64 @@ export async function fetchFollowing(userId: number): Promise<FollowUser[]> {
   });
   if (!res.ok) throw new Error('Failed to fetch following');
   return res.json() as Promise<FollowUser[]>;
+}
+
+export async function fetchConversations(): Promise<ConversationPreview[]> {
+  const token = readToken();
+  const res = await fetch('/api/conversations', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch conversations');
+  return res.json() as Promise<ConversationPreview[]>;
+}
+
+export async function fetchMessages(
+  conversationId: number
+): Promise<Message[]> {
+  const token = readToken();
+  const res = await fetch(`/api/conversations/${conversationId}/messages`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch messages');
+  return res.json() as Promise<Message[]>;
+}
+
+export async function sendMessage(
+  conversationId: number,
+  text: string
+): Promise<Message> {
+  const token = readToken();
+  const res = await fetch(`/api/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error('Failed to send message');
+  return res.json() as Promise<Message>;
+}
+
+export async function startConversation(userId: number): Promise<Conversation> {
+  const token = readToken();
+  const res = await fetch('/api/conversations', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userId }),
+  });
+  if (!res.ok) throw new Error('Failed to start conversation');
+  return res.json() as Promise<Conversation>;
+}
+
+export async function fetchUnreadCount(): Promise<UnreadCount> {
+  const token = readToken();
+  const res = await fetch('/api/conversations/unread', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch unread count');
+  return res.json() as Promise<UnreadCount>;
 }
