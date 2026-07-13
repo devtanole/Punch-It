@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SportsMmaIcon from '@mui/icons-material/SportsMma';
 import EditSharpIcon from '@mui/icons-material/EditSharp';
-import { Post, readPosts } from '../lib/data';
+import { readPosts } from '../lib/data';
+import { Post } from '../lib/types';
 import { useUser } from '../components/useUser';
 import { Comments } from './Comments';
 import {
-  CircularProgress,
   Card,
   CardContent,
   CardActions,
@@ -18,12 +18,53 @@ import {
   Stack,
   Menu,
   MenuItem,
+  Skeleton,
 } from '@mui/material';
 
+// Skeleton that matches PostCard's shape exactly
+function PostCardSkeleton() {
+  return (
+    <Card sx={{ mb: 3 }}>
+      <CardContent>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Skeleton variant="circular" width={40} height={40} />
+          <Box sx={{ flex: 1 }}>
+            <Skeleton variant="text" width={120} height={24} />
+            <Skeleton variant="text" width={80} height={18} />
+          </Box>
+        </Stack>
+        <Skeleton variant="text" width="90%" height={20} sx={{ mt: 2 }} />
+        <Skeleton variant="text" width="75%" height={20} />
+        <Skeleton variant="text" width="60%" height={20} />
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height={200}
+          sx={{ mt: 2, borderRadius: 2 }}
+        />
+      </CardContent>
+      <Divider />
+      <CardActions sx={{ p: 2 }}>
+        <Skeleton variant="text" width={80} height={32} />
+      </CardActions>
+    </Card>
+  );
+}
+
+function PostFeedSkeleton() {
+  return (
+    <>
+      {[1, 2, 3].map((i) => (
+        <PostCardSkeleton key={i} />
+      ))}
+    </>
+  );
+}
+
 export function PostFeed() {
-  const [posts, setPosts] = useState<Post[]>();
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<unknown>();
+  const [error, setError] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { user } = useUser();
 
@@ -32,33 +73,29 @@ export function PostFeed() {
       setIsLoading(true);
       try {
         const posts = await readPosts();
-
         setPosts(posts);
       } catch (err) {
-        setError(err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setIsLoading(false);
       }
     }
-
     if (user) load();
   }, [user]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  if (!user) return <div style={{ marginTop: '20px' }}>Login to continue</div>;
-  if (isLoading) return <CircularProgress />;
-  if (error) {
+  if (!user) {
     return (
-      <div>
-        Error Loading Posts:{' '}
-        {error instanceof Error ? error.message : 'Unknown Error'}
-      </div>
+      <Typography sx={{ mt: 4, ml: 2 }} color="text.secondary">
+        Please sign in to view the feed.
+      </Typography>
     );
   }
 
@@ -94,7 +131,6 @@ export function PostFeed() {
               onClick={handleMenuClose}>
               Add Post
             </MenuItem>
-
             <MenuItem
               component={Link}
               to="/fights/new"
@@ -104,13 +140,36 @@ export function PostFeed() {
           </Menu>
         </Stack>
 
-        {posts?.map((post) => (
-          <PostCard
-            key={post.postId}
-            post={post}
-            currentUserId={user?.userId}
-          />
-        ))}
+        {error && (
+          <Typography color="error">Error loading posts: {error}</Typography>
+        )}
+
+        {isLoading && <PostFeedSkeleton />}
+
+        {!isLoading && posts.length === 0 && !error && (
+          <Card sx={{ mb: 3 }}>
+            <CardContent sx={{ textAlign: 'center', py: 6 }}>
+              <SportsMmaIcon
+                sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }}
+              />
+              <Typography variant="h6" color="text.secondary" mb={1}>
+                Nothing here yet
+              </Typography>
+              <Typography variant="body2" color="text.disabled">
+                Be the first to post — hit the glove icon to get started.
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading &&
+          posts.map((post) => (
+            <PostCard
+              key={post.postId}
+              post={post}
+              currentUserId={user?.userId}
+            />
+          ))}
       </Box>
     </Stack>
   );

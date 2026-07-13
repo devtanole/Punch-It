@@ -11,20 +11,19 @@ import { UserSearchBar } from './pages/Search';
 import { FightHistoryForm } from './pages/FightHistoryForm';
 import { MessagesInbox } from './pages/MessagesInbox';
 import { ConversationThread } from './pages/ConversationThread';
-
-// className = 'block border border-gray-600 rounded p-2 h-8 w-full mb-2';
+import { LandingPage } from './pages/LandingPage';
 
 export default function App() {
   return (
     <UserProvider>
       <Routes>
         <Route path="/" element={<Header />}>
+          <Route index element={<LandingPage />} />
           <Route path="/auth/sign-up" element={<AuthPage mode="sign-up" />} />
           <Route path="/auth/sign-in" element={<AuthPage mode="sign-in" />} />
-          <Route index element={<PostFeed />} />
+          <Route path="/feed" element={<PostFeed />} />
           <Route path="details/:postId" element={<PostForm />} />
           <Route path="/fights/:fightId" element={<FightHistoryForm />} />
-
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/messages" element={<MessagesInbox />} />
           <Route

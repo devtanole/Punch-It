@@ -133,11 +133,12 @@ export function Header() {
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
-                    navigate('/');
+                    navigate('/feed');
                     setLogoMenuAnchorEl(null);
                   }}>
                   Home
                 </MenuItem>
+
                 <MenuItem
                   onClick={() => {
                     navigate('/details/new');
