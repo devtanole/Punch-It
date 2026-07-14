@@ -206,7 +206,7 @@ function PostCard({ post, currentUserId }: PostProps) {
           {currentUserId === post.userId && (
             <IconButton
               component={Link}
-              to={`details/${post.postId}`}
+              to={`/details/${post.postId}`}
               color="primary">
               <EditSharpIcon />
             </IconButton>
