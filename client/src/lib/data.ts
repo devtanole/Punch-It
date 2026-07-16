@@ -3,52 +3,21 @@ import {
   FighterProps,
   PromoterProps,
 } from '../components/ConditionalFormFields';
-
-export type Post = {
-  postId: number;
-  userId: number;
-  textContent: string;
-  mediaUrls: string[];
-  createdAt: string;
-  username: string;
-  profilePictureUrl: string;
-};
-
-type Profile = User | FighterUser | PromoterUser;
-
-export type NewPost = {
-  textContent: string;
-  mediaUrls: string[];
-};
-
-export type Comment = {
-  commentId: number;
-  postId: number;
-  userId: number;
-  profilePictureUrl: string;
-  username: string;
-  text: string;
-  createdAt: string;
-};
-
-export type FightHistory = {
-  fightId: number;
-  fighterId: number;
-  date: string;
-  outcome: string;
-  decision: string;
-  promotion: string;
-  username: string;
-};
-
-export type NewFightEntry = {
-  date: string;
-  outcome: string;
-  decision: string;
-  promotion: string;
-};
-
 import { User } from '../components/UserContext';
+import {
+  type Post,
+  type NewPost,
+  type Comment,
+  type FightHistory,
+  type NewFightEntry,
+} from './types';
+import type { Follow, FollowStatus, FollowUser } from './types';
+import {
+  Message,
+  Conversation,
+  ConversationPreview,
+  UnreadCount,
+} from './types';
 
 const authKey = 'um.auth';
 
@@ -56,6 +25,8 @@ type Auth = {
   user: User;
   token: string;
 };
+
+type Profile = User | FighterUser | PromoterUser;
 
 export function saveAuth(user: User, token: string): void {
   const auth: Auth = { user, token };
@@ -280,4 +251,110 @@ export async function removeComment(
   };
   const res = await fetch(`api/posts/${postId}/comments/${commentId}`, req);
   if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
+}
+
+export async function fetchFollowStatus(userId: number): Promise<FollowStatus> {
+  const token = readToken();
+  const res = await fetch(`/api/follows/status/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch follow status');
+  return res.json() as Promise<FollowStatus>;
+}
+
+export async function followUser(userId: number): Promise<Follow> {
+  const token = readToken();
+  const res = await fetch(`/api/follows/${userId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to follow user');
+  return res.json() as Promise<Follow>;
+}
+
+export async function unfollowUser(userId: number): Promise<void> {
+  const token = readToken();
+  const res = await fetch(`/api/follows/${userId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to unfollow user');
+}
+
+export async function fetchFollowers(userId: number): Promise<FollowUser[]> {
+  const token = readToken();
+  const res = await fetch(`/api/follows/${userId}/followers`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch followers');
+  return res.json() as Promise<FollowUser[]>;
+}
+
+export async function fetchFollowing(userId: number): Promise<FollowUser[]> {
+  const token = readToken();
+  const res = await fetch(`/api/follows/${userId}/following`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch following');
+  return res.json() as Promise<FollowUser[]>;
+}
+
+export async function fetchConversations(): Promise<ConversationPreview[]> {
+  const token = readToken();
+  const res = await fetch('/api/conversations', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch conversations');
+  return res.json() as Promise<ConversationPreview[]>;
+}
+
+export async function fetchMessages(
+  conversationId: number
+): Promise<Message[]> {
+  const token = readToken();
+  const res = await fetch(`/api/conversations/${conversationId}/messages`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch messages');
+  return res.json() as Promise<Message[]>;
+}
+
+export async function sendMessage(
+  conversationId: number,
+  text: string
+): Promise<Message> {
+  const token = readToken();
+  const res = await fetch(`/api/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error('Failed to send message');
+  return res.json() as Promise<Message>;
+}
+
+export async function startConversation(userId: number): Promise<Conversation> {
+  const token = readToken();
+  const res = await fetch('/api/conversations', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userId }),
+  });
+  if (!res.ok) throw new Error('Failed to start conversation');
+  return res.json() as Promise<Conversation>;
+}
+
+export async function fetchUnreadCount(): Promise<UnreadCount> {
+  const token = readToken();
+  const res = await fetch('/api/conversations/unread', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch unread count');
+  return res.json() as Promise<UnreadCount>;
 }

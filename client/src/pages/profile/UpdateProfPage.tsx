@@ -4,10 +4,10 @@ import {
   ConditionalFormFields,
   type FighterProps,
   type PromoterProps,
-} from '../components/ConditionalFormFields';
+} from '../../components/ConditionalFormFields';
 
 import { TextField, Button } from '@mui/material';
-import { updateProfile } from '../lib/data';
+import { updateProfile } from '../../lib/data';
 import { Profile } from './UserProfile';
 
 type updateProps =

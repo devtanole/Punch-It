@@ -7,6 +7,10 @@ import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { followsRouter } from './routes/follows.js';
+import { conversationsRouter } from './routes/conversations.js';
 
 type Auth = {
   email: string;
@@ -52,11 +56,16 @@ type Post = {
   createdAt: string;
 };
 
+// const db = new pg.Pool({
+//   connectionString: process.env.DATABASE_URL,
+//   ssl: {
+//     rejectUnauthorized: false,
+//   },
+// });
+
 const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: false,
 });
 
 const hashSecret = process.env.TOKEN_SECRET;
@@ -65,6 +74,16 @@ if (!hashSecret) {
 }
 
 const app = express();
+
+app.use(helmet());
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // max 20 attempts per window
+  message: 'Too many attempts, please try again later.',
+});
+
+app.use('/api/auth', authLimiter);
 
 app.use(express.json());
 
@@ -194,7 +213,7 @@ app.post('/api/auth/sign-in', async (req, res, next) => {
       userId: user.userId,
       username: user.username,
     };
-    const newSignedToken = jwt.sign(payload, hashSecret);
+    const newSignedToken = jwt.sign(payload, hashSecret, { expiresIn: '7d' });
     res.status(200).json({
       user: payload,
       token: newSignedToken,
@@ -203,6 +222,9 @@ app.post('/api/auth/sign-in', async (req, res, next) => {
     next(err);
   }
 });
+
+app.use('/api/follows', followsRouter(db));
+app.use('/api/conversations', conversationsRouter(db));
 
 app.get('/api/fights', authMiddleware, async (req, res, next) => {
   try {
@@ -498,8 +520,8 @@ app.get('/api/fights/:fightId', authMiddleware, async (req, res, next) => {
     }
 
     const sql = `
-      select * from "fightHistory"
-      where "fightId" = $1 and "userId" = $2;
+      select * from "fight_history"
+      where "fightId" = $1 and "fighterId" = $2;
     `;
     const params = [fightId, userId];
     const result = await db.query(sql, params);
@@ -839,7 +861,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 console.log('__dirname:', __dirname);
-console.log('reactStaticDir:', path.resolve(__dirname, '../client/dist'));
+console.log('reactStaticDir:', path.resolve(__dirname, '../../client/dist'));
 
 const reactStaticDir = path.resolve(__dirname, '../../client/dist');
 const uploadsStaticDir = new URL('public', import.meta.url).pathname;

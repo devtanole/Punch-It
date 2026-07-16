@@ -16,11 +16,22 @@ import {
   FormControl,
   Select,
   SelectChangeEvent,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 
 // const defaultAvi = '/images/AvatarDefault';
 
 export function RegistrationForm() {
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<'fighter' | 'promoter'>('fighter');
   const [preview, setPreview] = useState<string>('/images/AvatarDefault.webp');
@@ -91,12 +102,18 @@ export function RegistrationForm() {
       }
       const user = (await res.json()) as User;
       console.log('Registered', user);
-      alert(
-        `Successfully registered ${user.username} as userId ${user.userId}.`
-      );
-      navigate('/auth/sign-in');
+      setSnackbar({
+        open: true,
+        message: `Welcome, ${user.username}!`,
+        severity: 'success',
+      });
+      setTimeout(() => navigate('/auth/sign-in'), 1500);
     } catch (err) {
-      alert(`Error registering user: ${err}`);
+      setSnackbar({
+        open: true,
+        message: `Error registering: ${err}`,
+        severity: 'error',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -190,6 +207,12 @@ export function RegistrationForm() {
       <Link to="/auth/sign-in" style={{ display: 'block', marginTop: '1rem' }}>
         Already have an account? Sign In
       </Link>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}>
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
     </div>
   );
 }

@@ -1,13 +1,7 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  type Post,
-  type NewPost,
-  addPost,
-  readPost,
-  removePost,
-  updatePost,
-} from '../lib/data';
+import { addPost, readPost, removePost, updatePost } from '../lib/data';
+import { type Post, type NewPost } from '../lib/types';
 import { MediaUploads } from '../components/MediaUploads';
 import {
   CircularProgress,
