@@ -7,7 +7,7 @@ import {
   Divider,
   Stack,
 } from '@mui/material';
-import { FightHistory } from '../lib/data';
+import { FightHistory } from '../lib/types';
 import { Link } from 'react-router-dom';
 import EditSharpIcon from '@mui/icons-material/EditSharp';
 
