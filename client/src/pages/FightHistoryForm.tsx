@@ -1,13 +1,7 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  type FightHistory,
-  type NewFightEntry,
-  readFight,
-  addFight,
-  updateFight,
-  removeFight,
-} from '../lib/data';
+import { readFight, addFight, updateFight, removeFight } from '../lib/data';
+import { type FightHistory, type NewFightEntry } from '../lib/types';
 import {
   CircularProgress,
   Box,

@@ -14,7 +14,8 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { FightHistory, removeFight } from '../../lib/data';
+import { removeFight } from '../../lib/data';
+import { FightHistory } from '../../lib/types';
 
 type Props = {
   fights: FightHistory[];
