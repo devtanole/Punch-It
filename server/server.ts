@@ -56,13 +56,6 @@ type Post = {
   createdAt: string;
 };
 
-// const db = new pg.Pool({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: {
-//     rejectUnauthorized: false,
-//   },
-// });
-
 const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: false,
