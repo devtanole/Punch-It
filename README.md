@@ -35,17 +35,15 @@ Media: Cloudinary API for file storage
 
 # 📸 Screenshots
 
-<img width="1792" height="1120" alt="Screenshot 2025-07-30 at 6 46 39 PM" src="https://github.com/user-attachments/assets/e12e92f2-6f48-4feb-8e72-6b8cbb09c53c" />
+<img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 18 04 PM" src="https://github.com/user-attachments/assets/8921739c-94c8-4458-949e-8763ffde47f4" />
 
-<img width="1792" height="1120" alt="Screenshot 2025-07-31 at 12 29 51 AM" src="https://github.com/user-attachments/assets/c7a73f2b-9e17-47ec-a88f-ca051913f34a" />
+<img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 18 00 PM" src="https://github.com/user-attachments/assets/44b85282-71bf-47f2-b438-d1c482db2056" />
+<img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 17 05 PM" src="https://github.com/user-attachments/assets/f1b6fa40-0fc8-45a3-b47e-5df1189c15a5" />
+<img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 17 01 PM" src="https://github.com/user-attachments/assets/6d47e522-25f1-4045-9539-b6c8a7a09fee" />
+<img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 16 57 PM" src="https://github.com/user-attachments/assets/420b0a1a-c1e8-45aa-b45f-0904e75b7f24" />
+<img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 16 50 PM" src="https://github.com/user-attachments/assets/e93f1e97-1a45-4b89-b2ed-4d7d7b22bb2a" />
 
-<img width="1792" height="1120" alt="Screenshot 2025-07-31 at 12 30 14 AM" src="https://github.com/user-attachments/assets/22f5010a-ec2c-4988-88f5-6e6f42f02368" />
 
-<img width="1792" height="1120" alt="Screenshot 2025-07-31 at 12 30 58 AM" src="https://github.com/user-attachments/assets/ba72e62f-4753-415f-bf4c-8f4e33622a68" />
-
-<img width="1792" height="1120" alt="Screenshot 2025-07-31 at 12 31 25 AM" src="https://github.com/user-attachments/assets/64b9fc2c-da15-4d58-82df-98f9686fadb1" />
-
-<img width="1792" height="1120" alt="Screenshot 2025-07-31 at 12 32 30 AM" src="https://github.com/user-attachments/assets/f0a4abc2-e0ef-40b9-acc5-25e5de95c09d" />
 
 
 
