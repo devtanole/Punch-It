@@ -3,6 +3,10 @@
 
 Think LinkedIn's professionalism meets Twitter's feed, purpose-built for combat sports. Fighters showcase verified stats, highlight reels, and fight history in one place; promoters scout talent and post events without digging through scattered social media.
 
+# Why I built this
+
+Amateur fighters have no centralized way to build a public record or get discovered — everything lives in scattered Instagram posts and word of mouth.
+
 # 📌 Features
 <strong>🔐 User Authentication</strong>
 Secure login/signup system supporting two account types:
