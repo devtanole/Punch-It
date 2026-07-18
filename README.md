@@ -7,42 +7,22 @@ Think LinkedIn's professionalism meets Twitter's feed, purpose-built for combat 
 
 Amateur fighters have no centralized way to build a public record or get discovered — everything lives in scattered Instagram posts and word of mouth.
 
-# 📌 Features
-<strong>🔐 User Authentication</strong>
-Secure login/signup system supporting two account types:
+# Features
 
-<strong>Fighters:</strong> Share fight history, stats, and highlights
+## 🔐 Role-based authentication
+Two distinct account types with tailored experiences — Fighters manage records and highlights; Promoters scout talent and publish events.
 
-<strong>Promoters:</strong> Discover talent and post event updates
+# 📝 Full CRUD across every entity
+Profiles, posts (video/image/text), comments, and fight records — all user-owned and editable.
 
-📝 <strong>Full CRUD Functionality</strong>
-Users can create, edit, and delete:
+# 📷 Media pipeline via Cloudinary
+Training footage, highlight reels, and event graphics upload and serve through Cloudinary's CDN rather than being stored on the app server.
 
-Profile info
+# 🧾 Tabbed profile system
+Bio & contact, post history, and fight record live as separate views on one profile — built to scale as more data types get added.
 
-Posts (videos/images/text)
-
-Comments
-
-Fight records
-
-📷 <strong>Media Uploads via Cloudinary</strong>
-Fighters can upload training footage, fight highlights, or promotional graphics with seamless video/image integration.
-
-🎨 <strong>Modern UI with Material UI</strong>
-Clean, responsive, and mobile-friendly interface using Material UI components.
-
-🧾 <strong>Profile Tabs</strong>
-Each user profile features multiple tabs for:
-
-🧍 Bio & contact info
-
-📜 Post history
-
-🥋 Fight history
-
-💬 Social Feed
-Users can post updates, promote events, or engage with the fight community. Featuring a searchbar to find users by username.
+# 💬 Social feed with search
+Real-time-feeling feed of posts and event updates, with username search to find and follow specific fighters or promoters.
 
 # 🚀 Tech Stack
 <strong>Frontend:</strong> React, TypeScript, Material UI
