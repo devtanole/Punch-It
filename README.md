@@ -7,6 +7,15 @@ Think LinkedIn's professionalism meets Twitter's feed, purpose-built for combat 
 
 Amateur fighters have no centralized way to build a public record or get discovered — everything lives in scattered Instagram posts and word of mouth.
 
+# Recent changes ( July 2026 )
+
+What changed in the recent refactor:
+
+- Refactored monolithic Express server into modular route files and upgraded schema with new tables for follows, direct messaging
+- Built a full social graph including follow/unfollow system with follower counts, a direct messaging inbox with unread badge notifications and optimistic UI updates
+- Overhauled frontend architecture by splitting large components into focused sub-components, adding loading skeletons, empty states, and a dedicated landing page
+- Hardened security with JWT token expiry, Helmet HTTP headers, rate limiting on auth routes, client-side protected routes, and consistent error handling across all endpoints
+
 # Features
 
 ## 🔐 Role-based authentication
@@ -42,6 +51,32 @@ Media: Cloudinary API for file storage
 <img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 17 01 PM" src="https://github.com/user-attachments/assets/6d47e522-25f1-4045-9539-b6c8a7a09fee" />
 <img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 16 57 PM" src="https://github.com/user-attachments/assets/420b0a1a-c1e8-45aa-b45f-0904e75b7f24" />
 <img width="1792" height="1120" alt="Screenshot 2026-07-17 at 6 16 50 PM" src="https://github.com/user-attachments/assets/e93f1e97-1a45-4b89-b2ed-4d7d7b22bb2a" />
+
+# Roadmap
+
+ - Likes system + ratings for promoters/promotions and fighters to review their experience with one another
+ - Event RSVP/ticketing for promoters
+ - Verified fight record via third-party sanctioning body API
+
+
+
+# Getting started
+
+bashgit clone https://github.com/[your-username]/punch-it.git
+cd punch-it
+
+## install dependencies
+npm install
+
+## set up environment variables
+cp .env.example .env
+## add your PostgreSQL connection string, JWT secret, and Cloudinary credentials
+
+## run migrations
+[your migration command]
+
+## start dev server
+npm run dev
 
 
 
