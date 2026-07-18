@@ -12,16 +12,16 @@ Amateur fighters have no centralized way to build a public record or get discove
 ## 🔐 Role-based authentication
 Two distinct account types with tailored experiences — Fighters manage records and highlights; Promoters scout talent and publish events.
 
-# 📝 Full CRUD across every entity
+## 📝 Full CRUD across every entity
 Profiles, posts (video/image/text), comments, and fight records — all user-owned and editable.
 
-# 📷 Media pipeline via Cloudinary
+## 📷 Media pipeline via Cloudinary
 Training footage, highlight reels, and event graphics upload and serve through Cloudinary's CDN rather than being stored on the app server.
 
-# 🧾 Tabbed profile system
+## 🧾 Tabbed profile system
 Bio & contact, post history, and fight record live as separate views on one profile — built to scale as more data types get added.
 
-# 💬 Social feed with search
+## 💬 Social feed with search
 Real-time-feeling feed of posts and event updates, with username search to find and follow specific fighters or promoters.
 
 # 🚀 Tech Stack
