@@ -1,6 +1,7 @@
 # 🥊 Punch It
-// 🔗 **Live Demo:** http://ec2-54-67-107-36.us-west-1.compute.amazonaws.com/ </br> //
-Punch It is a full-stack social networking platform built for the fight community — connecting amateur fighters and promoters in a single, professional space. Think LinkedIn meets Twitter, tailored specifically for the fight scene.
+<strong>A social platform built for the fight community — where fighters build their record and promoters find their next headliner. <strong />
+
+Think LinkedIn's professionalism meets Twitter's feed, purpose-built for combat sports. Fighters showcase verified stats, highlight reels, and fight history in one place; promoters scout talent and post events without digging through scattered social media.
 
 # 📌 Features
 <strong>🔐 User Authentication</strong>
