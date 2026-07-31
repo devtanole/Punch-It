@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "cloudinary": "^2.10.0",
+    "cors": "^2.8.6",
+    "tsx": "^4.23.1"
+  }
+}
