@@ -41,10 +41,21 @@ CREATE TABLE IF NOT EXISTS "messages" (
   "createdAt"      timestamptz NOT NULL DEFAULT now()
 );
 
--- New indexes
-CREATE INDEX IF NOT EXISTS ON "follows" ("followerId");
-CREATE INDEX IF NOT EXISTS ON "follows" ("followingId");
-CREATE INDEX IF NOT EXISTS ON "messages" ("conversationId");
-CREATE INDEX IF NOT EXISTS ON "messages" ("senderId");
-CREATE INDEX IF NOT EXISTS ON "conversations" ("user1Id");
-CREATE INDEX IF NOT EXISTS ON "conversations" ("user2Id");
+-- likes table
+CREATE TABLE IF NOT EXISTS "likes" (
+  "likeId"    serial PRIMARY KEY,
+  "postId"    int NOT NULL REFERENCES "posts" ("postId") ON DELETE CASCADE,
+  "userId"    int NOT NULL REFERENCES "users" ("userId") ON DELETE CASCADE,
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  UNIQUE ("postId", "userId")
+);
+
+-- Indexes (named to avoid syntax error)
+CREATE INDEX IF NOT EXISTS follows_follower_idx ON "follows" ("followerId");
+CREATE INDEX IF NOT EXISTS follows_following_idx ON "follows" ("followingId");
+CREATE INDEX IF NOT EXISTS messages_conversation_idx ON "messages" ("conversationId");
+CREATE INDEX IF NOT EXISTS messages_sender_idx ON "messages" ("senderId");
+CREATE INDEX IF NOT EXISTS conversations_user1_idx ON "conversations" ("user1Id");
+CREATE INDEX IF NOT EXISTS conversations_user2_idx ON "conversations" ("user2Id");
+CREATE INDEX IF NOT EXISTS likes_post_idx ON "likes" ("postId");
+CREATE INDEX IF NOT EXISTS likes_user_idx ON "likes" ("userId");
